@@ -1,0 +1,15 @@
+<h3>Hello from admin election</h3>
+{% set election_items = elections.data.0 %}
+{% set slots = elections.data.1 %}
+<ul>
+    {% for election in election_items %}
+        <li>{{loop.index}}. {{election.title}}</li>
+        {% if slots[election.id] %}
+            {% set slot = slots[election.id] %}
+            <ul data-json="{{ slot | json_encode() | safe }}">
+                <li> {{slot.id}}</li>
+                <li> {{slot.position_id}}</li>
+            </ul>
+        {% endif %}
+    {% endfor %}
+</ul>

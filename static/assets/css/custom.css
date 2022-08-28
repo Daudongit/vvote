@@ -1,0 +1,15 @@
+.level{display:flex; justify-content:space-between}
+.level a{margin-right: .4em;}
+.ml04 { margin-left: .4em; }
+.select2-container{
+    width: 100%!important
+}
+
+.level a{
+    /* background:none; */
+    border:none;
+}
+
+.level a img{
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
