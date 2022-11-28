@@ -1,7 +1,7 @@
 use actix_web::HttpRequest;
 use sqlx::postgres::PgPool;
 
-use crate::error::Error;
+use crate::error::error::Error;
 
 /// A basic trait to extract a Database Pool instance for use in views and the like.
 /// The impetus for this is that Extractors are visually hard to scan, and this does
@@ -19,7 +19,6 @@ impl DatabasePool for HttpRequest {
         if let Some(pool) = self.app_data::<PgPool>() {
             return Ok(&pool);
         }
-
         Err(Error::Generic(
             "Unable to retrieve Database Pool.".to_string(),
         ))

@@ -6,3 +6,4 @@ pub mod position;
 pub mod result;
 pub mod slot;
 pub mod suspend;
+pub mod visibility;

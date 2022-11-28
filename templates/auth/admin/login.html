@@ -1,0 +1,40 @@
+{% extends "layouts/app.html" %}
+{% block css %}
+    <link rel="stylesheet" href="/static/assets/css/login.css">
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="login-form">
+                    <form action="{{ url_for(name='admin.login.store') | safe }}" method="post">
+                        <input name="csrf" value="{{csrf_token}}" type="hidden"/>
+                        <h2 class="text-center">Sign in</h2>		
+                        <div class="text-center social-btn">
+                            <a href="#" class="btn btn-success btn-block">
+                                <i class="fa  fa-sign-in"></i> 
+                                <b>{{ config(key='APP_NAME', default='E-Voting System') }}</b>  
+                            </a>
+                        </div>
+                        <div class="or-seperator"><i></i></div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-user"></i></span>
+                                <input type="text" class="form-control" name="email" 
+                                    placeholder="...enter your email address" required="required">
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                                <input type="password" class="form-control" name="password"
+                                    placeholder="...enter your password" required="required">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success btn-block login-btn">login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -6,7 +6,7 @@ use hmac::{Hmac, Mac, NewMac};
 use radix::RadixNum;
 use sha2::Sha256;
 
-use crate::error::Error;
+use crate::error::error::Error;
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -15,7 +15,10 @@ const KEY_SALT: &str = "com.jelly.accounts.token_generator";
 /// Returns the number of seconds since 2001. Used for comparisons.
 fn num_seconds() -> i64 {
     let now = Utc::now();
-    let y2k = Utc.ymd(2001, 1, 1).and_hms(0, 0, 0);
+    let y2k = Utc.with_ymd_and_hms(
+         2001, 1, 1, 0, 0, 0
+    );
+    let y2k = y2k.unwrap();
     now.signed_duration_since(y2k).num_seconds()
 }
 

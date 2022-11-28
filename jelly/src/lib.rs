@@ -6,8 +6,9 @@
 // We re-export/hoist a few things that are commonly imported.
 // Less time screwing around with Cargo.toml for a framework-feel is
 // ideal.
-pub use actix_rt;
-pub use actix_service;
+
+// pub use actix_rt;
+// pub use actix_service;
 pub use actix_session;
 pub use actix_web;
 pub use anyhow;
@@ -28,13 +29,10 @@ pub mod email;
 pub mod error;
 pub mod forms;
 pub mod guards;
-pub mod jobs;
 pub mod prelude;
 pub mod request;
-pub mod utils;
-
-mod server;
-mod templates;
+pub mod helpers;
+pub mod server;
 pub use server::Server;
 
-pub type Result<T> = std::result::Result<T, crate::error::Error>;
+pub type Result<T> = std::result::Result<T, crate::error::error::Error>;

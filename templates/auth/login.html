@@ -1,1 +1,30 @@
-<h3>Hello from login</h3>
+{% extends "layouts/app.html" %}
+{% block css %}
+    <link rel="stylesheet" href="/static/assets/css/login.css">
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="login-form">
+                    <form action="{{ url_for(name='login.store') | safe }}" method="post">
+                        <input name="csrf" value="{{csrf_token}}" type="hidden"/>
+                        <div class="text-center social-btn">
+                            <a href="#" class="btn btn-success btn-block">
+                                <i class="fa  fa-sign-in"></i> 
+                                <b>{{ config(key='APP_NAME', default='E-Voting System') }}</b>  
+                            </a>
+                        </div>
+                        <div class="or-seperator"><i></i></div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success btn-block login-btn">Click start to start voting</button>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success btn-block login-btn">Start</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

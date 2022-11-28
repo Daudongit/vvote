@@ -1,0 +1,107 @@
+{% extends "layouts/app.html" %}
+{% import "admin/macros/modal.html" as modal %}
+{% import "admin/macros/delete.html" as delete %}
+{% import "admin/macros/pagination.html" as pagination_view %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Candidate Possible Office</div>
+                    <div class="panel-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Edit</th>
+                                    <th>Remove</th>
+                                    <th>Add</th>
+                                </tr>
+                            </thead>
+                            {% set start = (positions.current_page - 1) * positions.per_page + 1 %}
+                            {% for position in positions.data %}
+                                <tr>
+                                    <td scope="row">{{ start + loop.index0 }}</td>
+                                    <td>{{position.name}}</td>
+                                    <td>
+                                        <a class="btn btn-info btn-sm" href="#modalComponet" 
+                                            data-content="{{ position | json_encode() }}"
+                                            data-toggle="modal" data-action="Edit">
+                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{
+                                            delete::delete_btn(
+                                                id=position.id,
+                                                route=url_for(name='admin.positions.delete', elements=[position.id | as_str])
+                                            ) | safe
+                                        }}
+                                    </td>
+                                    {% if loop.first %}
+                                        <td>
+                                            <a class="btn btn-success btn-sm" href="#modalComponet" 
+                                                data-toggle="modal" data-action="Create">
+                                                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
+                                    {% else %}
+                                        <td>
+                                            <button type="submit" class="btn btn-sm" disabled>
+                                                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                            </button>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="text-center">No office has been found. Try to add one</div>
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-success btn-sm" href="#modalComponet" 
+                                            data-toggle="modal" data-action="Create">
+                                            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <div class="text-center">
+                            {% 
+                                set pagination_collections = pagination(
+                                    current_page=positions.current_page,
+                                    per_page=positions.per_page,
+                                    total=positions.total,
+                                ) 
+                            %}
+                            {# {{ positions | json_encode(pretty=true) | safe}} #}
+                            {{
+                                pagination_view::render(pagination_items=pagination_collections)
+                            }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block modal %}
+    {{ 
+        modal::modal(
+            title="Create Category", 
+            action=url_for(name='admin.positions.store'), 
+            body=`
+                <label for="name" class="control-label"> Name:</label>
+                <input type="text" class="form-control" id="name" name="name"/>
+            `
+        ) 
+    }}
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+         const realUrl = "{{ url_for(name='admin.positions.update', elements=['_']) | safe }}"
+    </script>
+    <script type="text/javascript" src="/static/assets/js/position.modal.js"></script>
+{% endblock %}

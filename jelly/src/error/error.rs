@@ -2,8 +2,12 @@
 //! returning responses. This module handles converting several differing
 //! error formats into the one we use for responding.
 
+use crate::error::template::render;
 use actix_web::{HttpResponse, ResponseError};
-use std::{error, fmt};
+use actix_session::{SessionGetError, SessionInsertError};
+use std::{error, fmt, env::VarError, io::Error as IOError};
+use crate::guards::auth::auth_config::MissingAuthSessionError;
+use crate::guards::csrf::{CsrfError, extractor::CsrfExtractorError};
 
 /// This enum represents the largest classes of errors we can expect to
 /// encounter in the lifespan of our application. Feel free to add to this
@@ -21,6 +25,12 @@ pub enum Error {
     InvalidPassword,
     InvalidAccountToken,
     PasswordHasher(djangohashers::HasherError),
+    CsrfToken(CsrfExtractorError<CsrfError>),
+    MissingAuthSessionError(MissingAuthSessionError),
+    EnvError(VarError),
+    IOError(IOError),
+    SessionGetError(SessionGetError),
+    SessionInsertError(SessionInsertError)
 }
 
 impl fmt::Display for Error {
@@ -38,6 +48,17 @@ impl error::Error for Error {
             Error::Template(e) => Some(e),
             Error::Json(e) => Some(e),
             Error::Radix(e) => Some(e),
+            Error::MissingAuthSessionError(e) => Some(e),
+            Error::EnvError(e) => Some(e),
+            Error::IOError(e) => Some(e),
+            Error::SessionGetError(e) => Some(e),
+            Error::SessionInsertError(e) => Some(e),
+            Error::CsrfToken(e) => Some(
+                match e {
+                    CsrfExtractorError::InvalidToken => &CsrfError::TokenMismatch,
+                    CsrfExtractorError::Inner(e) => e,
+                }
+            ),
 
             Error::Generic(_)
             | Error::InvalidPassword
@@ -89,50 +110,46 @@ impl From<djangohashers::HasherError> for Error {
     }
 }
 
+impl From<CsrfExtractorError<CsrfError>> for Error {
+    fn from(e: CsrfExtractorError<CsrfError>) -> Self {
+        Error::CsrfToken(e)
+    }
+}
+
+impl From<MissingAuthSessionError> for Error {
+    fn from(e: MissingAuthSessionError) -> Self {
+        Error::MissingAuthSessionError(e)
+    }
+}
+
+impl From<VarError> for Error {
+    fn from(e: VarError) -> Self {
+        Error::EnvError(e)
+    }
+}
+
+impl From<IOError> for Error {
+    fn from(e: IOError) -> Self {
+        Error::IOError(e)
+    }
+}
+
+impl From<SessionGetError> for Error {
+    fn from(e: SessionGetError) -> Self {
+        Error::SessionGetError(e)
+    }
+}
+
+impl From<SessionInsertError> for Error {
+    fn from(e: SessionInsertError) -> Self {
+        Error::SessionInsertError(e)
+    }
+}
+
 impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         HttpResponse::InternalServerError()
             .content_type("text/html; charset=utf-8")
-            .body(&render(self))
+            .body(render(self))
     }
-}
-
-/// A generic method for rendering an error to present to the browser.
-/// This should only be called in non-production settings.
-pub(crate) fn render<E: std::fmt::Debug>(e: E) -> String {
-    format!(
-        r#"<!DOCTYPE html>
-        <html>
-        <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-            <title>Jelly: An Error Occurred</title>
-            <style>
-                html, body {{
-                    margin: 0;
-                    padding: 0;
-                    background: #F0DEE0;
-                    color: #111;
-                    font-family: -apple-system, "Helvetica Neue", Helvetica, "Segoe UI", Ubuntu, arial, sans-serif;
-                }}
-                
-                h1 {{ margin: 0; background: #F05758; border-bottom: 1px solid #C7484A; padding: 20px; font-size: 30px; font-weight: 600; line-height: 40px; }}
-                
-                code {{
-                    display: block;
-                    font-family: "Anonymous Pro", Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif; 
-                    font-size: 16px;
-                    line-height: 20px;
-                    padding: 20px;
-                }}
-            </style>
-        </head>
-        <body>
-            <h1>Error</h1>
-            <code>{:#?}<code>
-        </body>
-        </html>
-    "#,
-        e
-    )
 }

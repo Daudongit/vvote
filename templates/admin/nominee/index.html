@@ -1,0 +1,144 @@
+{% extends "layouts/app.html" %}
+{% import "admin/macros/modal.html" as modal %}
+{% import "admin/macros/delete.html" as delete %}
+{% import "admin/macros/pagination.html" as pagination_view %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="/static/assets/css/MultiFileUpload.css"> 
+    <link rel="stylesheet" href="/static/assets/css/readmore.css">
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Nominees </div>
+                    <div class="panel-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Profile</th>
+                                    <th>Edit</th>
+                                    <th>Remove</th>
+                                    <th>Add</th>
+                                </tr>
+                            </thead>
+                            {% set start = (nominees.current_page - 1) * nominees.per_page + 1 %}
+                            {% for nominee in nominees.data %}
+                                <tr>
+                                    <td scope="row">{{ start + loop.index0 }}</td>
+                                    <td>{{nominee.first_name ~' '~ nominee.last_name}}</td>
+                                    <td><p class="more">{{nominee.description}}</p></td>
+                                    <td>
+                                        <a class="btn btn-info btn-sm" href="#modalComponet" data-toggle="modal"
+                                            data-action="Edit" data-content="{{ nominee | json_encode() }}">
+                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{
+                                            delete::delete_btn(
+                                                id=nominee.id,
+                                                removed_image=nominee.image,
+                                                route=url_for(name='admin.nominees.delete', elements=[nominee.id | as_str])
+                                            ) | safe
+                                        }}
+                                    </td>
+                                    {% if loop.first %}
+                                        <td>
+                                            <a class="btn btn-success btn-sm" href="#modalComponet" 
+                                                data-toggle="modal" data-action="Create">
+                                                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
+                                    {% else %}
+                                        <td>
+                                            <button type="submit" class="btn btn-sm" disabled>
+                                                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                            </button>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="text-center">No nominee has been found. Try to add one </div>
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-success btn-sm" href="#modalComponet" 
+                                            data-toggle="modal" data-action="Create">
+                                            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <div class="text-center">
+                            {% 
+                                set pagination_collections = pagination(
+                                    current_page=nominees.current_page,
+                                    per_page=nominees.per_page,
+                                    total=nominees.total,
+                                ) 
+                            %}
+                            {{
+                                pagination_view::render(pagination_items=pagination_collections)
+                            }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block modal %}
+    {{ 
+        modal::modal(
+            title="Create Nominee", 
+            action=url_for(name='admin.nominees.store'),
+            enctype="multipart/form-data",
+            body=`
+                <label for="recipient-name" class="control-label">First Name:</label>
+                <input type="text" class="form-control" id="first_name" name="first_name">
+                <label for="recipient-name" class="control-label">Last Name:</label>
+                <input type="text" class="form-control" id="last_name" name="last_name">
+                <label for="recipient-name" class="control-label">Email:</label>
+                <input type="text" class="form-control" id="email" name="email">
+                <label for="description" class="control-label"> Description:</label>
+                <input type="text" class="form-control" id="description" name="description"/>
+                <input type="hidden" id="removed_image" name="removed_image"/>
+                <div class="file-upload-previews">
+                    <div class="MultiFile-label">
+                        <a class="MultiFile-remove" href="#" id="remove_img">x</a> 
+                        <span>
+                            <span class="MultiFile-label" 
+                                title="File selected: image.jpg">
+                                <span class="MultiFile-title">Image</span>
+                                <img class="MultiFile-preview" 
+                                    style="max-height:100px;max-width:100px;" 
+                                    src="#">
+                            </span>
+                        </span>
+                        <input type="hidden" name="previous_image"  id="previous_image"/>
+                    </div>
+                </div>
+                <div class="file-upload">
+                    <input type="file" name="image" class="file-upload-input with-preview"  
+                        title="Click to add files" maxlength="1" accept="jpg|jpeg|png" 
+                        data-maxsize="1024">
+                    <span style="color:#000">CLICK OR DRAG IMAGE HERE</span>
+                </div>
+            `
+        ) 
+    }}
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+         const realUrl = "{{ url_for(name='admin.nominees.update', elements=['_']) | safe }}"
+    </script>
+    <script src="/static/assets/js/readmore.js"></script>
+    <script type="text/javascript" src="/static/assets/js/jQuery.MultiFile.min.js"></script>
+    <script type="text/javascript" src="/static/assets/js/MultiFileUpload.js"></script>
+    <script type="text/javascript" src="/static/assets/js/nominee.modal.js"></script>
+{% endblock %}

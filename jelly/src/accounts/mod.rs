@@ -18,6 +18,7 @@ pub struct User {
     pub name: String,
     pub is_admin: bool,
     pub is_anonymous: bool,
+    pub session_name: String,
 }
 
 impl Default for User {
@@ -25,9 +26,10 @@ impl Default for User {
     fn default() -> Self {
         User {
             id: 0,
-            name: String::new(),
+            name: String::new(), 
             is_admin: false,
             is_anonymous: true,
+            session_name: String::new(),
         }
     }
 }

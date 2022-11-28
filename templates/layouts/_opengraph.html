@@ -1,0 +1,11 @@
+<meta property="og:title" content="{{config(key='OPEN_GRAPH_TITLE')}}" />
+<meta property="og:description" content="{{config(key='OPEN_GRAPH_DESCRIPTION')}}" />
+<meta property="og:image" content="/static/{{config(key='OPEN_GRAPH_IMAGE') | safe}}" />
+<meta property="og:url" content="/{{full_url | safe}}">
+<meta name="twitter:card" content="/static/{{config(key='OPEN_GRAPH_IMAGE') | safe}}">
+
+<!--  Non-Essential, But Recommended -->
+
+<meta property="og:site_name" content="{{config(key='OPEN_GRAPH_TITLE')}}">
+<meta property="og:type" content="website" />
+<meta name="twitter:image:alt" content="/static/{{config(key='OPEN_GRAPH_IMAGE') | safe}}">

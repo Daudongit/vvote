@@ -1,0 +1,55 @@
+<ul class="nav navbar-nav navbar-right">
+    <!-- Authentication Links -->
+    {# {% if user.session_name and user.session_name == config(key='ADMIN_SESSION_NAME') %} #}
+    {% if true %}
+        <li class="{{ active(route=url_for(name='admin.dashboard'), current_path=current_path)}}">
+            <a href="{{ url_for(name='admin.dashboard') | safe }}">Dashboard</a>
+        </li>
+        <li class="{{ active(route=url_for(name='admin.nominees.index'), current_path=current_path)}}">
+            <a href="{{ url_for(name='admin.nominees.index') | safe }}">Candidate</a>
+        </li>
+        <li class="{{ active(route=url_for(name='admin.positions.index'), current_path=current_path)}}">
+            <a href="{{ url_for(name='admin.positions.index') | safe }}">Available Office</a>
+        </li>
+        <li class="{{active(route=url_for(name='admin.slots.index'), current_path=current_path)}}">
+            <a href="{{ url_for(name='admin.slots.index') | safe }}">Slot</a>
+        </li>
+        <li class="{{active(route=url_for(name='admin.elections.index'), current_path=current_path)}}">
+            <a href="{{ url_for(name='admin.elections.index') | safe }}">Session/Year</a>
+        </li>
+        <li class="{{active(route=url_for(name='admin.results.index'), current_path=current_path)}}">
+            <a href="{{ url_for(name='admin.results.index') | safe }}">Vote</a>
+        </li>
+        {# <li class="{{active(route=url_for(name='admin.codes.index'), current_path=current_path)}}">
+            <a href="{{ url_for(name='admin.codes.index') | safe }}">Code</a>
+        </li>
+        <li class="{{active(route=url_for(name='admin.members.index'), current_path=current_path)}}">
+            <a href="{{ url_for(name='admin.members.index') | safe }}">Member</a>
+        </li> #}
+        <li>
+            <a href="{{ url_for(name='admin.logout') | safe }}"
+                onclick="event.preventDefault();
+                    document.getElementById('admin-logout-form').submit();">
+                Logout
+            </a>
+
+            <form id="admin-logout-form" action="{{ url_for(name='admin.logout') | safe }}" 
+                method="POST" style="display: none;">
+                <input name="csrf" value="{{csrf_token}}" type="hidden"/>
+            </form>
+        </li>
+    {% endif %}
+    {% if user.session_name and user.session_name == config(key='VOTER_SESSION_NAME') %}
+        <li>
+            <a href="{{ url_for(name='logout') | safe }}"
+                onclick="event.preventDefault();
+                    document.getElementById('vote-logout-form').submit();">
+                Logout
+            </a>
+            <form id="vote-logout-form" action="{{ url_for(name='logout') | safe }}" 
+                method="POST" style="display: none;">
+                <input name="csrf" value="{{csrf_token}}" type="hidden"/>
+            </form>
+        </li>
+    {% endif %}
+</ul>

@@ -1,13 +1,13 @@
 use std::fmt;
-use std::ops::Deref;
-
-use super::Validation;
-use chrono::NaiveDate;
 use log::error;
-use serde::{Deserialize, Deserializer};
+use std::ops::Deref;
+use std::str::FromStr;
+use chrono::NaiveDate;
+use super::{Validation, ParseStringError};
+use serde::{Serialize, Deserialize, Deserializer};
 
 /// A field for accepting and validating a date string.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize)]
 pub struct DateField {
     pub value: String,
     pub date: Option<chrono::NaiveDate>,
@@ -41,9 +41,24 @@ impl Deref for DateField {
     }
 }
 
+impl From<String> for DateField {
+    fn from(text: String)->Self{
+        Self { value: text, errors: Vec::new(), date: None }
+    }
+}
+
+impl FromStr for DateField {
+    type Err = ParseStringError;
+
+    fn from_str(text: &str)->Result<Self, Self::Err>{
+        Ok(Self { value: text.into(), errors: Vec::new(), date: None })
+    }
+}
+
 impl Validation for DateField {
-    fn is_valid(&mut self) -> bool {
-        match NaiveDate::parse_from_str(&self.value, "%m/%d/%Y") {
+    fn is_valid_field(&mut self, field_name: &str) -> bool {
+        // match NaiveDate::parse_from_str(&self.value, "%m/%d/%Y") {
+        match NaiveDate::parse_from_str(&self.value, "%Y/%m/%d") {
             Ok(date) => {
                 self.date = Some(date);
                 true
@@ -51,7 +66,7 @@ impl Validation for DateField {
 
             Err(e) => {
                 error!("Error parsing DateField: {}", e);
-                self.errors.push("Invalid date format.".to_string());
+                self.errors.push(format!("Invalid date({field_name}) format."));
                 false
             }
         }

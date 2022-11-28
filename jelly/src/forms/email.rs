@@ -1,9 +1,10 @@
-use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 use std::ops::Deref;
+use std::str::FromStr;
 use validator::validate_email;
+use super::{Validation, ParseStringError};
+use serde::{Deserialize, Deserializer, Serialize};
 
-use super::Validation;
 
 /// A field for validating that an email address is a valid address.
 /// Mostly follows Django semantics.
@@ -39,11 +40,25 @@ impl Deref for EmailField {
     }
 }
 
+impl From<String> for EmailField {
+    fn from(text: String)->Self{
+        Self { value: text, errors: Vec::new() }
+    }
+}
+
+impl FromStr for EmailField {
+    type Err = ParseStringError;
+
+    fn from_str(text: &str)->Result<Self, Self::Err>{
+        Ok(Self { value: text.into(), errors: Vec::new() })
+    }
+}
+
 impl Validation for EmailField {
-    fn is_valid(&mut self) -> bool {
+    fn is_valid_field(&mut self, field_name: &str) -> bool {
         if self.value == "" {
             self.errors
-                .push("Email address cannot be blank.".to_string());
+                .push(format!("{field_name} cannot be blank."));
             return false;
         }
 
@@ -51,7 +66,6 @@ impl Validation for EmailField {
             self.errors.push("Invalid email format.".to_string());
             return false;
         }
-
         true
     }
 }

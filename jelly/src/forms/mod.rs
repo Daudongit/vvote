@@ -20,6 +20,8 @@
 //! }
 //! ```
 
+use std::fmt;
+
 mod booly;
 pub use booly::BoolField;
 
@@ -38,6 +40,22 @@ pub use slug::SlugField;
 mod text;
 pub use text::TextField;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParseStringError;
+
+impl fmt::Display for ParseStringError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        "provided string was not supported for field type".fmt(f)
+    }
+}
+
+/// List of possible validators
+pub enum Validator<'a> {
+    Min(usize),
+    Max(usize),
+    Contain(&'a str)
+}
+
 /// A trait that Forms can implement for validation. Each field type implements this trait, so you
 /// can simply write your validation method as `field.is_valid()`.
 pub trait Validation {
@@ -45,4 +63,16 @@ pub trait Validation {
     fn is_valid(&mut self) -> bool {
         false
     }
+
+    /// Checks if the data held is valid. Should return a bool value.
+    /// specify field name
+    fn is_valid_field(&mut self,  _: &str) -> bool {
+        false
+    }
+
+    /// Checks if the data held is valid with validators. Should return a bool value.
+    fn is_valid_with_validators(&mut self, field_name: &str, _: Vec<Validator>) -> bool {
+        self.is_valid_field(field_name)
+    }
+
 }

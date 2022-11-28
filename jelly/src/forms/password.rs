@@ -1,9 +1,10 @@
 use serde::{Deserialize, Deserializer, Serialize};
-use std::fmt;
+use super::{Validation, ParseStringError};
+use std::str::FromStr;
 use std::ops::Deref;
 use zxcvbn::zxcvbn;
+use std::fmt;
 
-use super::Validation;
 
 /// A field for validating password strength. Will also include
 /// hints on how to make a better password.
@@ -15,9 +16,9 @@ pub struct PasswordField {
 }
 
 impl PasswordField {
-    pub fn validate_with(&mut self, user_inputs: &[&str]) -> bool {
+    pub fn validate_with(&mut self, user_inputs: &[&str], field_name: &str) -> bool {
         if self.value == "" {
-            self.errors.push("Password cannot be blank.".to_string());
+            self.errors.push(format!("{field_name} cannot be blank."));
             return false;
         }
 
@@ -74,8 +75,22 @@ impl Deref for PasswordField {
     }
 }
 
+impl From<String> for PasswordField {
+    fn from(text: String)->Self{
+        Self { value: text, errors: Vec::new(), hints: Vec::new() }
+    }
+}
+
+impl FromStr for PasswordField {
+    type Err = ParseStringError;
+
+    fn from_str(text: &str)->Result<Self, Self::Err>{
+        Ok(Self { value: text.into(), errors: Vec::new(), hints: Vec::new()})
+    }
+}
+
 impl Validation for PasswordField {
-    fn is_valid(&mut self) -> bool {
-        self.validate_with(&[])
+    fn is_valid_field(&mut self, field_name: &str) -> bool {
+        self.validate_with(&[], field_name)
     }
 }

@@ -1,20 +1,24 @@
+pub mod auth_config;
+
 use std::task::{Context, Poll};
 
-use actix_service::{Service, Transform};
-use actix_web::dev::{ServiceRequest, ServiceResponse};
-use actix_web::http::header::LOCATION;
-use actix_web::{Error, HttpResponse};
-use futures::future::{ok, Either, Ready};
-
+use std::cell::RefCell;
 use crate::error::render;
+use auth_config::AuthConfig;
 use crate::request::Authentication;
+use actix_web::{Error, HttpResponse};
+use actix_web::http::header::LOCATION;
+use actix_service::{Service, Transform};
+use futures::future::{ok, Either, Ready};
+use actix_web::dev::{ServiceRequest, ServiceResponse};
+
 
 /// A guard that enables route and scope authentication gating.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Auth {
-    /// Where to redirect the user to if they fail an
-    /// authentication check.
-    pub redirect_to: &'static str,
+    /// list of authenticated routes and redirect path
+    /// Authentication configuration
+    pub auth_config: RefCell<Option<AuthConfig>>
 }
 
 impl<S, B> Transform<S> for Auth
@@ -30,9 +34,10 @@ where
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
+        let auth_config = 
+            self.auth_config.borrow_mut().take().unwrap_or(vec![]);
         ok(AuthMiddleware {
-            service,
-            redirect_to: self.redirect_to,
+            service, auth_config: Some(auth_config)
         })
     }
 }
@@ -41,8 +46,9 @@ where
 /// on the result. You generally don't need this type, but it needs to be exported
 /// for compiler reasons.
 pub struct AuthMiddleware<S> {
-    /// Where to redirect to.
-    redirect_to: &'static str,
+    /// list of authenticated routes and redirect path
+    /// Authentication configuration
+    auth_config: Option<Vec<AuthConfig>>,
 
     /// The service provided.
     service: S,
@@ -63,20 +69,20 @@ where
     }
 
     fn call(&mut self, req: ServiceRequest) -> Self::Future {
+        let auth_config = self.auth_config.take().unwrap_or(vec![]);
         let (request, payload) = req.into_parts();
-
-        let status = request.is_authenticated();
+        let status = request.is_authenticated(auth_config);
 
         match status {
-            Ok(v) if v == true => {
+            Ok((is_authorized, _)) if is_authorized == true => {
                 let req = ServiceRequest::from_parts(request, payload).ok().unwrap();
                 Either::Left(self.service.call(req))
             }
 
-            Ok(_) => Either::Right(ok(ServiceResponse::new(
+            Ok((_, redirect_to)) => Either::Right(ok(ServiceResponse::new(
                 request,
                 HttpResponse::Found()
-                    .header(LOCATION, self.redirect_to)
+                    .header(LOCATION, redirect_to)
                     .finish()
                     .into_body(),
             ))),

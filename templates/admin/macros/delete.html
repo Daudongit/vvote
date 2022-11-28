@@ -1,0 +1,16 @@
+{% macro delete_btn(id, route, removed_image="") %}
+    <form action="{{ route | safe }}" method="POST"
+        id="delete_{{id}}">
+        {# <input name="_method" value="delete" type="hidden"/> #}
+        <input name="csrf" value="{{csrf_token}}" type="hidden"/>
+        <input name="removed_image" value="{{removed_image}}" type="hidden"/>
+        <button type="submit" class="btn btn-danger btn-sm" 
+            onclick="event.preventDefault();
+                sweet_alert(()=>{
+                    document.getElementById('delete_{{id}}').submit();  
+                }
+            );">
+            <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+    </form>
+{% endmacro delete_btn %}

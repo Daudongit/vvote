@@ -1,9 +1,9 @@
-use jelly::prelude::*;
-use jelly::Result;
-
 use crate::models::{
     election::Election, result::Results, slot::Slot, position::Position, nominee::Nominee
 };
+use jelly::prelude::*;
+use jelly::Result;
+
 
 /// Returns an overview of everything in the system.
 pub async fn index(request: HttpRequest) -> Result<HttpResponse> {

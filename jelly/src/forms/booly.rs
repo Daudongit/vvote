@@ -1,8 +1,9 @@
 use serde::{Deserialize, Deserializer, Serialize};
-use std::fmt;
-use std::ops::Deref;
-
+use std::str::{FromStr, ParseBoolError};
 use super::Validation;
+use std::ops::Deref;
+use std::fmt;
+
 
 /// A simple BoolField.
 ///
@@ -40,13 +41,26 @@ impl Deref for BoolField {
     }
 }
 
+impl From<String> for BoolField {
+    fn from(text: String)->Self{
+        Self { value: text.parse::<bool>().is_ok(), errors: Vec::new() }
+    }
+}
+
+impl FromStr for BoolField {
+    type Err = ParseBoolError;
+
+    fn from_str(text: &str)->Result<Self, Self::Err>{
+        Ok(Self { value: text.parse()?, errors: Vec::new() })
+    }
+}
+
 impl Validation for BoolField {
-    fn is_valid(&mut self) -> bool {
+    fn is_valid_field(&mut self, field_name: &str) -> bool {
         if !self.value {
-            self.errors.push("Bad boolean value?".to_string());
+            self.errors.push(format!("Bad boolean({field_name}) value?"));
             return false;
         }
-
         true
     }
 }

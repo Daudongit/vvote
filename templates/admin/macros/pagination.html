@@ -1,0 +1,34 @@
+{% macro render(pagination_items) %}
+    <ul class="pagination">
+        {% for pagination in pagination_items %}
+            {% set active_cls = "" %}
+            {% set link = "#" %}
+            {% if pagination.link != "#"%}
+                {% set link = "?page=" ~ pagination.link %}
+            {% endif %}
+            {% if pagination.active %}
+                {% set active_cls = "active" %}
+            {% endif %}
+            {% if pagination.page == "..." %}
+                <span class="mx-1">...</span>
+            {% else %}
+                <li class="page-item {{active_cls}}">
+                    <a class="page-link" href="{{link}}">{{pagination.page}}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endmacro render %}
+
+{# start = (page - 1) * itemsPerPage + 1
+end = totalItems
+
+if (itemsPerPage < totalItems) {
+  end = itemsPerPage * page
+  if (end > totalItems) {
+    end = totalItems;
+  }
+}
+
+// e.g. "21-30 of 193 items"
+start + '-' + end + ' of ' + totalItems + ' items' #}

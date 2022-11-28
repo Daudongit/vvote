@@ -1,12 +1,11 @@
-use actix_session::UserSession;
+use jelly::actix_session::SessionExt as _;
 use jelly::prelude::*;
 use jelly::Result;
 
 /// Show admin login form
 pub async fn show_login_form(request: HttpRequest) -> Result<HttpResponse> {
     request.render(200, "auth/login.html", {
-        let context = Context::new();
-        context
+        Context::new()
     })
 }
 

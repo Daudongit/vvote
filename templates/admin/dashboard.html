@@ -1,1 +1,80 @@
-<h3>Hello from dashboard</h3>
+{% extends "layouts/app.html" %}
+{% block css %}
+    <link rel="stylesheet" href="/static/assets/css/widget.css">
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 col-md-offset-">
+                <div class="row">
+                    <div class="col-md-6">            
+                        <div class="widget navy-bg p-lg text-center">
+                            <div class="m-b-md">
+                                <div class="left">
+                                    <h1 class="m-xs">{{nominee_count}}</h1>
+                                    <h3 class="font-bold no-margins">Candidates</h3>
+                                    <a href="{{ url_for(name='admin.nominees.index') | safe}}" class="link center">
+                                        View Detail
+                                    </a>
+                                </div>
+                                <div class="right">
+                                    <i class="fa fa-users fa-7x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6"> 
+                        <div class="widget lazur-bg p-lg text-center">
+                            <div class="m-b-md">
+                                <div class="left">
+                                    <h1 class="m-xs">{{vote_count ~ '/' ~ election_count}}</h1>
+                                    <h3 class="font-bold no-margins">Vote/Year</h3>
+                                    <a href="{{ url_for(name='admin.elections.index') | safe}}" class="link center">
+                                        View Detail
+                                    </a>
+                                </div>
+                                <div class="right">
+                                    <i class="fa fa-sitemap fa-7x"></i>
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6"> 
+                        <div class="widget yellow-bg p-lg text-center">
+                            <div class="m-b-md">
+                                <div class="left">
+                                    <h1 class="m-xs">{{post_count}}</h1>
+                                    <h3 class="font-bold no-margins">Offices</h3>
+                                    <a href="{{ url_for(name='admin.positions.index') | safe}}" class="link center">
+                                        View Detail
+                                    </a>
+                                </div>
+                                <div class="right">
+                                    <i class="fa fa-pencil-square-o fa-7x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6"> 
+                        <div class="widget red-bg p-lg text-center">
+                            <div class="m-b-md">
+                                <div class="left">
+                                    <h1 class="m-xs">{{slot_count}}</h1>
+                                    <h3 class="font-bold no-margins">Slots</h3>
+                                    <a href="{{ url_for(name='admin.slots.index') | safe}}" class="link center">
+                                        View Detail
+                                    </a>
+                                </div>
+                                <div class="right">
+                                    <i class="fa fa-list-alt fa-7x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

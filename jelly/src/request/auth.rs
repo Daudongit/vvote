@@ -1,8 +1,11 @@
-use actix_session::UserSession;
-use actix_web::HttpRequest;
 
+use crate::guards::{AuthConfig, AuthSessionName};
+use actix_session::SessionExt as _;
+use actix_web::HttpMessage as _;
+use crate::error::error::Error;
+use actix_web::HttpRequest;
 use crate::accounts::User;
-use crate::error::Error;
+use serde_json::Value;
 
 /// `Authentication` is kind of a request guard - it returns a Future which will resolve
 /// with either the current authenticated user, or "error" out if the user has no session data
@@ -11,33 +14,69 @@ use crate::error::Error;
 ///
 pub trait Authentication {
     /// Returns whether a user session exists and is valid.
-    fn is_authenticated(&self) -> Result<bool, Error>;
+    fn is_authenticated(&self, auth_config: AuthConfig) -> Result<(bool, String), Error>;
+
+    /// Returns whether a user session is missing(absent).
+    fn is_guest(&self, auth_config_name: &AuthSessionName) -> Result<bool, Error>;
 
     /// Sets a serializable user instance.
-    fn set_user(&self, account: User) -> Result<(), Error>;
+    fn set_user(&self, auth_config_name: &AuthSessionName, account: User) -> Result<(), Error>;
 
     /// Returns a User, if it can be extracted properly.
-    fn user(&self) -> Result<User, Error>;
+    fn user(&self, auth_config_name: &AuthSessionName) -> Result<User, Error>;
 }
 
 impl Authentication for HttpRequest {
-    #[inline(always)]
-    fn is_authenticated(&self) -> Result<bool, Error> {
-        Ok(self
-            .get_session()
-            .get::<serde_json::Value>("sku")?
-            .is_some())
+    // #[inline(always)]
+    fn is_authenticated(&self, auth_config: AuthConfig) -> Result<(bool, String), Error> {
+        if is_filter_routes(self)? {
+            return Ok((true, "/".into()));
+        }
+        let auth_config_name = auth_config.name.as_ref();
+        let is_authorized =
+            self.get_session().get::<Value>(auth_config_name)?.is_some();
+        if is_authorized {self.extensions_mut().insert(auth_config.name);}
+        Ok((is_authorized, auth_config.redirect_to))
     }
 
-    fn set_user(&self, account: User) -> Result<(), Error> {
-        self.get_session().set("sku", account)?;
+    fn is_guest(&self, auth_config_name: &AuthSessionName) -> Result<bool, Error> {
+        Ok(!self.get_session().get::<Value>(auth_config_name.as_ref())?.is_some())
+    }
+
+    fn set_user(&self, auth_config_name: &AuthSessionName, account: User) -> Result<(), Error> {
+        self.get_session().insert(auth_config_name.as_ref(), account)?;
         Ok(())
     }
 
-    fn user(&self) -> Result<User, Error> {
-        match self.get_session().get("sku")? {
+    fn user(&self, auth_config_name: &AuthSessionName) -> Result<User, Error> {
+        match self.get_session().get(auth_config_name.as_ref())? {
             Some(user) => Ok(user),
             None => Ok(User::default()),
         }
     }
+}
+
+
+fn is_filter_routes(request: &HttpRequest) -> Result<bool, Error>{
+    let filter_routes = filter_routes()?;
+    Ok(request.match_pattern().map_or_else(
+        || {
+            filter_routes.contains(&(
+                request.method().clone(), request.path().replace("//","/")
+            ))
+        },
+        |p|filter_routes.contains(
+            &(request.method().clone(), p.replace("//","/"))
+        )
+    ))
+}
+
+use std::collections::HashSet;
+use actix_web::http::Method;
+
+fn filter_routes()->Result<HashSet<(Method, String)>, Error>{
+    let mut routes_set = HashSet::new();
+    routes_set.insert((Method::GET, "/".into()));
+    routes_set.insert((Method::GET, "/admin/dashboard/".into()));
+    Ok(routes_set)
 }

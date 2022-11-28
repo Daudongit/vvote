@@ -1,121 +1,131 @@
 //! Admin module.
 
-use jelly::actix_web::web::{get, post, put, patch, delete, resource, scope, ServiceConfig};
-use jelly::guards::Auth;
+use jelly::actix_web::web::{get, post, resource, scope, ServiceConfig};
+// use crate::csrf::get_auth_config;
+// use jelly::guards::Auth;
+// use std::cell::RefCell;
+
 
 pub mod views;
 pub mod forms;
 
 pub fn configure(config: &mut ServiceConfig) {
-    let _guard = Auth {
-        redirect_to: "/login/",
-    };
 
-    // config.service(
-    //     scope("/dashboard/")
-    //         .wrap(guard)
-    //         // Index
-    //         .service(resource("").to(views::dashboard)),
-    // );
+    // let auth = Auth{auth_config: RefCell::new(Some(get_auth_config()))};
     config.service(
-        scope("/admin/")
-            .service(resource("/dashboard/").route(get().to(views::dashboard::index)),)
-            .service(resource("/results/").route(get().to(views::result::index)),)
-            .service(resource("/results/{election}/").route(get().to(views::result::show)),)
-            .service(resource("/suspend/{election}/").route(patch().to(views::suspend::update)),)
-            .service(resource("/export/vote/{election}/{position}/").route(get().to(views::export::index)),) // query param {type?}
-            .service(resource("/export/{election}/{slot}/").route(get().to(views::export::show)),) // query param {type?}
+        scope("/admin")
+            // .wrap(auth)
             .service(
-                scope("/nominees/")
-                    .service(
-                        resource("")
-                            .route(get().to(views::nominee::index))
-                            .route(post().to(views::nominee::store)),
-                    )
-                    // .service(resource("/create/").route(get().to(views::nominee::create)),)
-                    .service(
-                        resource("/{id}/")
-                            // .route(get().to(views::nominee::show))
-                            .route(put().to(views::nominee::update))
-                            .route(delete().to(views::nominee::destroy)),
-                    )
-                    // .service(resource("/{id}/edit/").route(get().to(views::nominee::edit)),)
+                resource("/")
+                    .route(get().to(views::dashboard::index)).name("admin.index"),
             )
             .service(
-                scope("/elections/")
-                    .service(
-                        resource("")
-                            .route(get().to(views::election::index))
-                            .route(post().to(views::election::store)),
-                    )
-                    .service(
-                        resource("/{id}/")
-                            .route(put().to(views::election::update))
-                            .route(delete().to(views::election::destroy)),
-                    )
+                resource("/download/")
+                    .route(get().to(views::export::generate)).name("admin.download"),
             )
             .service(
-                scope("/positions/")
-                    .service(
-                        resource("")
-                            .route(get().to(views::position::index))
-                            .route(post().to(views::position::store)),
-                    )
-                    .service(
-                        resource("/{id}/")
-                            .route(put().to(views::position::update))
-                            .route(delete().to(views::position::destroy)),
-                    )
+                resource("/dashboard/")
+                    .route(get().to(views::dashboard::index)).name("admin.dashboard"),
             )
             .service(
-                scope("/slots/")
-                    .service(
-                        resource("")
-                            .route(get().to(views::slot::index))
-                            .route(post().to(views::slot::store)),
-                    )
-                    .service(
-                        resource("/{id}/")
-                            .route(put().to(views::slot::update))
-                            .route(delete().to(views::slot::destroy)),
-                    )
+                resource("/results/")
+                    .route(get().to(views::result::index)).name("admin.results.index"),
+            )
+            .service(
+                resource("/results/{election}/")
+                    .route(get().to(views::result::show)).name("admin.results.show"),
+            )
+            .service(
+                resource("/suspend/{election}/")
+                    .route(post().to(views::suspend::update)).name("admin.suspend.update"),
+            )//http patch method not supported for form by actix
+            .service(
+                resource("report/visibility/{election}/")
+                    .route(post().to(views::visibility::update)).name("admin.visibility.update"),
+            )//http patch method not supported for form by actix
+            .service(
+                resource("/export/vote/{election}/{position}/")
+                    .route(get().to(views::export::index)).name("admin.export.index"),
+            ) // query param {type?}
+            .service(
+                resource("/export/{election}/{slot}/")
+                    .route(get().to(views::export::show)).name("admin.export.show"),
+            ) // query param {type?}
+
+            //nominees
+            .service(
+                resource("/nominees/")
+                    .route(get().to(views::nominee::index)).name("admin.nominees.index"),
+            ) 
+            .service(
+                resource("/nominees/store/")
+                    .route(post().to(views::nominee::store)).name("admin.nominees.store"),
+            ) 
+            .service(
+                resource("/nominees/{id}/")
+                    .route(post().to(views::nominee::update)).name("admin.nominees.update"),
+            )//http put method not supported for form by actix yet
+            .service(
+                resource("/nominees/{id}/delete/") 
+                    .route(post().to(views::nominee::destroy)).name("admin.nominees.delete"),
+            ) //http delete method not supported for form by actix yet
+
+            //elections
+            .service(
+                resource("/elections/")
+                    .route(get().to(views::election::index)).name("admin.elections.index"),
+            ) 
+            .service(
+                resource("/elections/store/")
+                    .route(post().to(views::election::store)).name("admin.elections.store"),
+            ) 
+            .service(
+                resource("/elections/{id}/")
+                    .route(post().to(views::election::update)).name("admin.elections.update"),
+            )
+            .service(
+                resource("/elections/{id}/delete/")
+                    .route(post().to(views::election::destroy)).name("admin.elections.delete"),
+            )
+
+            //positions
+            .service(
+                resource("/positions/")
+                    .route(get().to(views::position::index)).name("admin.positions.index"),
+            ) 
+            .service(
+                resource("/positions/store/")
+                    .route(post().to(views::position::store)).name("admin.positions.store"),
+            ) 
+            .service(
+                resource("/positions/{id}/")
+                    .route(post().to(views::position::update)).name("admin.positions.update"),
+            )
+            .service(
+                resource("/positions/{id}/delete/")
+                    .route(post().to(views::position::destroy)).name("admin.positions.delete"),
+            )
+
+            //slots
+            .service(
+                resource("/slots/")
+                    .route(get().to(views::slot::index)).name("admin.slots.index"),
+            ) 
+            .service(
+                resource("/slots/store/")
+                    .route(post().to(views::slot::store)).name("admin.slots.store"),
+            ) 
+            .service(
+                resource("/slots/{id}/")
+                    .route(post().to(views::slot::update)).name("admin.slots.update"),
+            )
+            .service(
+                resource("/slots/{id}/delete/")
+                    .route(post().to(views::slot::destroy)).name("admin.slots.delete"),
             )
     );
 }
 
-
-
-
-
-
-// Route::group(['namespace'=>'Admin','prefix'=>'admin','middleware'=>'auth:web'],function(){
-//     Route::get('dashboard','DashboardController@index')->name('admin.dashboard');
-//     Route::get('results','ResultController@index')->name('admin.results.index');
-//     Route::get('results/{election}','ResultController@show')->name('admin.results.show');
-//     //Route::get('export/{election}/{slot}/{type?}','ResultController@exportElection')->name('admin.results.export');
-//     Route::get('export/vote/{election}/{position}/{type?}','ExportController@index')->name('admin.export.votes');
-//     Route::get('export/{election}/{slot}/{type?}','ExportController@show')->name('admin.export.election');
-
-//     Route::resource('nominees','NomineeController',['as'=>'admin','except'=>['create','edit']]);
-//     Route::resource('elections','ElectionController',['as'=>'admin','except'=>['create','edit','show']]);
-//     Route::resource('positions','PositionController',['as'=>'admin','except'=>['create','edit']]);
-//     Route::resource('slots','SlotController',['as'=>'admin','except'=>['create','edit']]);
-//     Route::resource('members','MemberController',['as'=>'admin','except'=>['create','edit']]);
-//     Route::get('codes','CodeController@index')->name('admin.codes.index');
-//     Route::post('codes','CodeController@store')->name('admin.codes.store');
-//     Route::patch('elections/toggle/{election}','ElectionController@toggle')->name('admin.elections.toggle');
-//     Route::patch('elections/see/{election}','ElectionController@see')->name('admin.elections.see');
-// });
-
-
-// Route.get('users', 'UserController.index').as('users.index')
-// Route.post('users', 'UserController.store').as('users.store')
-// Route.get('users/create', 'UserController.create').as('users.create')
-// Route.get('users/:id', 'UserController.show').as('users.show')
-// Route.put('users/:id', 'UserController.update').as('users.update')
-// Route.patch('users/:id', 'UserController.update')
-// Route.get('users/:id/edit', 'UserController.edit').as('users.edit')
-// Route.delete('users/:id', 'UserController.destroy').as('users.destroy'
 
 // articles.index
 // articles.create

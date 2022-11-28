@@ -1,0 +1,72 @@
+{% if success or warning %}
+    {% if success %}
+        {% set status_value = success%}
+        {% set status_class = 'success' %}
+    {% else %}
+        {% set status_value = warning %}
+        {% set status_class = 'warning' %}
+    {% endif %}
+    <div class="alert alert-{{ status_class }} alert-dismissible text-center" role="alert">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      {{status_value}}
+    </div>
+{% endif %}
+
+
+{% if errors or flash_form %}
+    <div class="alert alert-danger text-center" alert-dismissible role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+          <ul>
+            {% set form_data = form | default(value=flash_form) %}
+            {# <pre>{{ form_data | json_encode(pretty=true) | safe}}</pre> #}
+            {% for key, value in form_data %}
+                {% if value.errors %}
+                  {% if value.errors | length > 0 %}
+                      {% for error in value.errors %}
+                          <li>{{ error }}</li>
+                      {% endfor %}
+                  {% endif %}
+                {% else %}
+                  {% if value is iterable %}
+                    {% for k, v in value %}
+                      {% if k == 'errors' and v | length > 0 %}
+                        {% for error in v %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                {% endif %}
+            {% endfor %}
+          </ul>
+    </div>
+{% endif %}
+
+{% if flash_messages %}
+  {% for flash in flash_messages %}
+    {% set status_class = 'success' %}
+    {% if flash.title in ['warning', 'error']  %}
+      {% set status_class = 'warning' %}
+    {% endif %}
+    <div class="alert alert-{{ status_class }} alert-dismissible text-center" role="alert">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      {{flash.message}}
+    </div>
+  {% endfor %}
+{% endif %}
+
+{% if error %}
+  {# <pre>{{ error | json_encode(pretty=true) | safe}}</pre> #}
+    <div class="alert alert-danger text-center" alert-dismissible role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <span>{{ error }}</span>
+    </div>
+{% endif %}

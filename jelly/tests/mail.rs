@@ -1,16 +1,17 @@
-use anyhow::Result;
-use httpmock::prelude::*;
-use serde_json;
-use tera::Context;
-use tera::Tera;
-use std::sync::{Arc, RwLock};
-use log::debug;
-
 
 
 #[cfg(test)]
+#[cfg(feature = "email-sendgrid")]
 mod send_via_sendgrid_should {
-    use super::*;
+    use anyhow::Result;
+    use httpmock::prelude::*;
+    use serde_json;
+    use tera::Context;
+    use tera::Tera;
+    use std::sync::{Arc, RwLock};
+    use log::debug;
+    // use super::*;    
+    use reexport_module::*;
     use jelly::email::sendgrid::Email;
     use test_log::test; // Automatically log tests
 
@@ -121,8 +122,16 @@ mod send_via_sendgrid_should {
 }
 
 #[cfg(test)]
+#[cfg(feature = "email-postmark")]
 mod send_via_postmark_should {
-    use super::*;
+    use anyhow::Result;
+    use httpmock::prelude::*;
+    use serde_json;
+    use tera::Context;
+    use tera::Tera;
+    use std::sync::{Arc, RwLock};
+    use log::debug;
+    // use super::*;
     use jelly::email::postmark::Email;
 
     #[test]

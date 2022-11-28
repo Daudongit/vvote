@@ -1,4 +1,41 @@
+
+
+{# <h4>{{ url_for(name="admin.nominees.index") }}</h4>
+<h4>{{ url_for(name="admin.nominees.update",elements=["1"]) }}</h4>
+<h4>{{ url_for(name="admin.elections.index") }}</h4>
+<h4>{{ url_for(name="admin.positions.index") }}</h4>
+<h4>{{ url_for(name="admin.slots.index") }}</h4> #}
+
+{# <h4>{{ url_for(name="admin.nominees.delete") }}</h4> #}
+{# <h4>{{ url_for(name="admin.elections.store") }}</h4>
+<h4>{{ url_for(name="admin.elections.update") }}</h4>
+<h4>{{ url_for(name="admin.elections.delete") }}</h4> #}
+{# <h4>{{ url_for(name="admin.positions.store") }}</h4>
+<h4>{{ url_for(name="admin.positions.update") }}</h4>
+<h4>{{ url_for(name="admin.positions.delete") }}</h4> #}
+{# <h4>{{ url_for(name="admin.slots.store") }}</h4>
+<h4>{{ url_for(name="admin.slots.update") }}</h4>
+<h4>{{ url_for(name="admin.slots.delete") }}</h4> #}
+
+{% include "admin/layout/_sidebar.html" %}
+{# <h4>{{ active(route=url_for(name='admin.dashboard'), current_path=current_path) }}</h4>
+ <a href="{{ url_for(name='admin.dashboard') }}">Dashboard</a> 
+<a href="{{ url_for(name='admin.results.index') }}">Result</a>   #}
+{# <h4>current_path: {{ current_path }}</h4>
+<h4>current_uri: {{ current_uri }}</h4> #}
+{# <h4>{{ url_for(name="admin.results.index") }}</h4> #}
+{# <h3>{{ active(route=url_for(name="admin.results.index"), current_path=current_path) }}</h3>
+<h3>{{ active(route=url_for(name="admin.elections.index"), current_path=current_path) }}***election****</h3> #}
+{# <h3>{{ active(url=url_for(name='admin.nominees.index.store'), current_path=current_path) }}</h3> #}
+
 <h3>Hello from admin election</h3>
+<h4>{{ now() | date(format="%Y-%m-%d") }}</h4>
+<h4>{{ now() | date(format="%Y/%m/%d") }}</h4>
+{# <h3>{{ active(name="hello") }}</h3>
+<h3>{{ active(name="hello") }}</h3>
+<h3>{{ active(name="hello") }}</h3> #}
+<h3>get_random: {{ get_random(start=0, end=10) }}</h3>
+<h3>get_random: {{ get_random(start=0, end=10) }}</h3>
 {% set election_items = elections.data.0 %}
 {% set slots = elections.data.1 %}
 <ul>

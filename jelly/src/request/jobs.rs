@@ -2,7 +2,7 @@ use actix_web::{web, HttpRequest};
 use background_jobs::Job;
 use background_jobs::QueueHandle;
 
-use crate::error::Error;
+use crate::error::error::Error;
 
 /// A trait for adding jobs to a background queue.
 pub trait JobQueue {
@@ -15,7 +15,7 @@ impl JobQueue for HttpRequest {
         let handle: Option<&web::Data<QueueHandle>> = self.app_data();
 
         if let Some(handle) = handle {
-            handle.queue(job)?;
+            // handle.queue(job)?;
             return Ok(());
         }
 

@@ -7,17 +7,21 @@
 //!
 //! This is adapted (and in some cases, lifted from) from the approach Zola uses.
 
+// use std::collections::BTreeMap;
 use std::sync::{Arc, RwLock};
 use std::{env, thread};
 
-use serde::{Deserialize, Serialize};
+// use crate::error::Error;
 use tera::Tera;
+use serde::{Deserialize, Serialize};
+// use tera::{Tera, Value, Error, to_value, from_value};
 
 #[cfg(feature = "template_watcher")]
 use std::{fs::read_dir, path::Path, sync::mpsc::channel, time::Duration};
 
 #[cfg(feature = "template_watcher")]
 use notify::{watcher, DebouncedEvent::*, RecursiveMode, Watcher};
+use crate::helpers::tera::{url, config, url_for, is_active_url, pagination};
 
 /// A `FlashMessage` is a generic message that can be shoved into the Session
 /// between requests. This isn't particularly useful for JSON-based workflows, but
@@ -45,9 +49,13 @@ pub struct TemplateStore {
 /// they're updated.
 pub fn load() -> TemplateStore {
     let templates_glob = env::var("TEMPLATES_GLOB").expect("TEMPLATES_GLOB not set!");
-    let templates = Arc::new(RwLock::new(
-        Tera::new(&templates_glob).expect("Unable to compile templates!"),
-    ));
+    let mut tera = Tera::new(&templates_glob).expect("Unable to compile templates!");
+    tera.register_function("url", url);
+    tera.register_function("config", config);
+    tera.register_function("url_for", url_for);
+    tera.register_function("active", is_active_url);
+    tera.register_function("pagination", pagination);
+    let templates = Arc::new(RwLock::new(tera));
 
     #[cfg(feature = "template_watcher")]
     let store = templates.clone();
@@ -82,7 +90,7 @@ pub fn load() -> TemplateStore {
                             // We only care about changes in non-empty folders
                             if path.is_dir() && is_folder_empty(&path) {
                                 continue;
-                            }
+                       }
 
                             info!("Change detected @ {}", path.display());
 

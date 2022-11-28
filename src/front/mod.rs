@@ -7,4 +7,7 @@ use jelly::actix_web::web::{ ServiceConfig};
 // pub mod forms;
 
 pub fn configure(_config: &mut ServiceConfig) {
+    // elections index
+    // vote/{election}  show
+    // vote/{election} store
 }
