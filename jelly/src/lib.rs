@@ -1,3 +1,5 @@
+// https://github.com/secretkeysio/jelly-actix-web-starter
+
 //! Jelly implements various helpers, traits, and types for actix-web that
 //! enable a nicer building experience. It's not released as a framework,
 //! as I don't think this works long-term - instead, clone and chisel away

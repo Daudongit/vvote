@@ -1,19 +1,19 @@
 //! Contains various extractors related to CSRF tokens.
 
-use std::future::{ready, Future, Ready};
-use std::ops::{Deref, DerefMut};
-use std::task::{Context, Poll};
-use std::str::FromStr;
 use std::pin::Pin;
+use std::str::FromStr;
+use std::task::{Context, Poll};
+use std::ops::{Deref, DerefMut};
+use std::future::{ready, Future, Ready};
 
 use crate::{host_prefix, secure_prefix};
 use super::{ CsrfError, DEFAULT_CSRF_COOKIE_NAME, DEFAULT_CSRF_TOKEN_NAME };
 
-use actix_web::{FromRequest, HttpMessage, HttpRequest};
-use actix_web::http::header::HeaderName;
 use actix_web::dev::Payload;
-use serde::{Deserialize, Serialize};
 use serde::de::{Error, Visitor};
+use serde::{Deserialize, Serialize};
+use actix_web::http::header::HeaderName;
+use actix_web::{FromRequest, HttpMessage, HttpRequest};
 
 /// Extractor to get the CSRF header from the request.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
@@ -172,7 +172,7 @@ impl CsrfCookieConfig {
 }
 
 /// Extractor to get the CSRF token that will be set as a cookie.
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct CsrfToken(pub(crate) String);
 
 impl Serialize for CsrfToken {
@@ -371,16 +371,10 @@ where
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         match self.inner.as_mut().poll(cx) {
             Poll::Ready(Ok(out)) => {
-                // if let Ok(ref token) = self.csrf_token {
-                //     if out.csrf_token().as_ref() == token.as_ref() {
-                //         return Poll::Ready(Ok(Csrf(out)));
-                //     }
-                // }
-
-                // Poll::Ready(Err(CsrfExtractorError::InvalidToken))
-
-                if let Ok(_token) = &self.csrf_token {
-                    return Poll::Ready(Ok(Csrf(out)));
+                if let Ok(ref token) = self.csrf_token {
+                    if out.csrf_token().as_ref() == token.as_ref() {
+                        return Poll::Ready(Ok(Csrf(out)));
+                    }
                 }
                 Poll::Ready(Err(CsrfExtractorError::InvalidToken))
             }

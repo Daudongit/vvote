@@ -76,7 +76,6 @@
                                     total=positions.total,
                                 ) 
                             %}
-                            {# {{ positions | json_encode(pretty=true) | safe}} #}
                             {{
                                 pagination_view::render(pagination_items=pagination_collections)
                             }}
@@ -86,12 +85,13 @@
             </div>
         </div>
     </div>
+    {% set post_url = url_for(name='admin.positions.store') %}
 {% endblock %}
 {% block modal %}
     {{ 
         modal::modal(
             title="Create Category", 
-            action=url_for(name='admin.positions.store'), 
+            action=post_url, 
             body=`
                 <label for="name" class="control-label"> Name:</label>
                 <input type="text" class="form-control" id="name" name="name"/>
@@ -101,7 +101,8 @@
 {% endblock %}
 {% block js %}
     <script type="text/javascript">
-         const realUrl = "{{ url_for(name='admin.positions.update', elements=['_']) | safe }}"
+        const postUrl = "{{ post_url | safe }}"
+         const updateUrl = "{{ url_for(name='admin.positions.update', elements=['_']) | safe }}"
     </script>
     <script type="text/javascript" src="/static/assets/js/position.modal.js"></script>
 {% endblock %}

@@ -1,17 +1,15 @@
 use futures::TryStreamExt;
+use jelly::serde::Serialize;
 use jelly::error::error::Error;
-use jelly::chrono::NaiveDateTime;
-use crate::models::PaginatedEntity;
-use crate::admin::forms::PositonForm;
-use jelly::serde::{Deserialize, Serialize};
 use jelly::sqlx::{self, postgres::PgPool, Row as _};
 
-#[derive(Debug, Serialize, Deserialize)]
+use crate::models::PaginatedEntity;
+use crate::admin::forms::PositonForm;
+
+#[derive(Debug, Serialize)]
 pub struct Position{
-    id: i32,
-    name: String,
-    created_at: NaiveDateTime,
-    updated_at: NaiveDateTime
+    pub id: i32,
+    pub name: String
 }
 
 impl Position{
@@ -24,7 +22,7 @@ impl Position{
         let (offset, items_per_page) = super::calculate_pagination_offset(page)?;
         let total_position_count = super::get_aggregate_count("positions", pool).await?;
         let sql = format!(
-            "select * from positions order by updated_at desc limit {} offset {}", 
+            "select id, name from positions order by created_at, id asc limit {} offset {}", 
             items_per_page, offset
         );
         let positions = Self::get_processed_record(sql, pool).await?;
@@ -37,12 +35,7 @@ impl Position{
          sqlx::query(sql.as_str()).fetch(pool);
         while let Some(row) = rows.try_next().await? {
             positions.push(
-                Position{
-                    id: row.try_get("id")?,
-                    name: row.try_get("name")?,
-                    created_at: row.try_get("created_at")?,
-                    updated_at: row.try_get("updated_at")?
-                }
+                Position{id: row.try_get("id")?, name: row.try_get("name")?}
             );
         }
         Ok(positions)
@@ -59,7 +52,8 @@ impl Position{
 
     pub async fn update(form: &PositonForm, id: i32, pool: &PgPool) -> Result<(), Error> {
         sqlx::query!(
-            "update positions set name=$1, updated_at=now() where id=$2", form.name.value, id
+            "update positions set name=$1, updated_at=now() where id=$2", 
+            form.name.value, id
         )
         .execute(pool).await?;
         Ok(())

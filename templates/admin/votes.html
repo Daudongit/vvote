@@ -1,10 +1,56 @@
-{% extends "layout.html" %}
-
-{% block title %}{% endblock %}
-
+{% extends "layouts/app.html" %}
+{% import "admin/macros/pagination.html" as pagination_view %}
 {% block content %}
-    <ul>
-        <li><a href="/accounts/register/">Register</a></li>
-        <li><a href="/accounts/login/">Login</a></li>
-    </ul>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading level">
+                        <strong>Election Votes</strong>
+                        <div class="level"></div>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Voter</th>
+                                    <th>Office</th>
+                                    <th>Canditate</th>
+                                    <th>Session/Election</th>
+                                </tr>
+                            </thead>
+                            {% set result_collection = results.data %}
+                            {% set start = (results.current_page - 1) * results.per_page + 1 %}
+                            {% for result in result_collection %}
+                                <tr>
+                                    <td scope="row">{{ start + loop.index0 }}</td>
+                                    <td>{{result.voter}}</td>
+                                    <td>{{result.position_name}}</td>
+                                    <td>{{result.nominee_name}}</td>
+                                    <td>{{result.election_title}}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="text-center">No vote  has been found.</div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <div class="text-center">
+                            {% 
+                                set pagination_collections = pagination(
+                                    current_page=results.current_page,
+                                    per_page=results.per_page,
+                                    total=results.total,
+                                ) 
+                            %}
+                            {{ pagination_view::render(pagination_items=pagination_collections) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

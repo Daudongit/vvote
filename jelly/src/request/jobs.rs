@@ -1,6 +1,6 @@
-use actix_web::{web, HttpRequest};
 use background_jobs::Job;
 use background_jobs::QueueHandle;
+use actix_web::{web, HttpRequest};
 
 use crate::error::error::Error;
 

@@ -1,9 +1,11 @@
-use jelly::djangohashers::{check_password, make_password};
-use jelly::sqlx::{self, postgres::PgPool};
-use crate::auth::forms::AdminLoginForm;
-use jelly::error::error::Error;
-use jelly::accounts::User;
 use std::env;
+
+use jelly::accounts::User;
+use jelly::error::error::Error;
+use jelly::sqlx::{self, postgres::PgPool};
+use jelly::djangohashers::{check_password, make_password};
+
+use crate::auth::forms::AdminLoginForm;
 
 pub struct Admin;
 
@@ -12,7 +14,7 @@ impl Admin {
         let session_name = 
             env::var("ADMIN_SESSION_NAME").unwrap_or_else(|_| "".into());
         let user = 
-            sqlx::query!("select * from users where email = $1", form.email.value)
+            sqlx::query!("select id, name, password from users where email = $1", form.email.value)
             .fetch_one(pool).await?;
     
         if !check_password(&form.password, &user.password)? {

@@ -8,8 +8,8 @@
 //! This is adapted (and in some cases, lifted from) from the approach Zola uses.
 
 // use std::collections::BTreeMap;
-use std::sync::{Arc, RwLock};
 use std::{env, thread};
+use std::sync::{Arc, RwLock};
 
 // use crate::error::Error;
 use tera::Tera;
@@ -21,7 +21,9 @@ use std::{fs::read_dir, path::Path, sync::mpsc::channel, time::Duration};
 
 #[cfg(feature = "template_watcher")]
 use notify::{watcher, DebouncedEvent::*, RecursiveMode, Watcher};
-use crate::helpers::tera::{url, config, url_for, is_active_url, pagination};
+use crate::helpers::tera::{
+    url, config, url_for, is_active_url, pagination, asci_str_limit
+};
 
 /// A `FlashMessage` is a generic message that can be shoved into the Session
 /// between requests. This isn't particularly useful for JSON-based workflows, but
@@ -55,6 +57,7 @@ pub fn load() -> TemplateStore {
     tera.register_function("url_for", url_for);
     tera.register_function("active", is_active_url);
     tera.register_function("pagination", pagination);
+    tera.register_function("asci_str_limit", asci_str_limit);
     let templates = Arc::new(RwLock::new(tera));
 
     #[cfg(feature = "template_watcher")]

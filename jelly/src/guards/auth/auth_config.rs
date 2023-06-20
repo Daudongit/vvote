@@ -1,7 +1,5 @@
 use std::error::Error;
 use std::fmt::Display;
-// use actix_web::http::Method;
-// use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use serde::de::{Error as DeError, Visitor};
 use actix_web::{HttpRequest, HttpResponse, HttpMessage, ResponseError};
@@ -10,7 +8,6 @@ use actix_web::{HttpRequest, HttpResponse, HttpMessage, ResponseError};
 pub struct AuthConfig {
     pub name: AuthSessionName, //sku
     pub redirect_to: String,
-    // pub secure_routes: HashSet<(Method, String)>
 }
 
 /// Current authentication session name

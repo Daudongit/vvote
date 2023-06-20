@@ -1,0 +1,112 @@
+{% extends "layouts/app.html" %}
+{% import "admin/macros/pagination.html" as pagination_view %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                {% set election_collection = elections.data %}
+                {% set cls = 'col-md-6 col-md-offset-3' %}
+                {%  if election_collection | length > 1 %}
+                    {% set cls = 'col-md-4' %}
+                {% endif %}
+                {% for election in election_collection %}
+                    <!-- item -->
+                    <div class="{{cls}} text-center">
+                        <div class="panel panel-info panel-pricing">
+                            <div class="panel-heading">
+                                <i class="fa fa-sitemap"></i>
+                                <h4>{{asci_str_limit(value=election.title, max_index=35)}}</h4>
+                            </div>
+                            <div class="panel-body text-center">
+                                <p>Start Date:
+                                    <strong>
+                                        {{election.start | date(format="%Y-%m-%d %H:%M")}}
+                                    </strong>
+                                </p>
+                                <p>End Date:
+                                    <strong>
+                                        {{election.end | date(format="%Y-%m-%d %H:%M")}}
+                                    </strong>
+                                </p>
+                            </div>
+                            <ul class="list-group text-center">
+                                <li class="list-group-item"><i class="fa fa-check"></i>Number of Offices: {{election.slots_count}}		                            </li>
+                                <li class="list-group-item">
+                                    <i class="fa fa-check"></i>
+                                    Status: 
+                                    {% if election.statuses.is_end %}
+                                        <span class="label label-danger">Closed</span>
+                                    {% elif election.statuses.is_locked %}
+                                        <span class="label label-danger">Locked</span>
+                                    {% elif election.statuses.is_coming_soon %}
+                                        <span class="label label-info">Soon</span>
+                                    {% elif election.statuses.is_running %}
+                                        <span class="label label-success">Ongoing</span>
+                                    {% endif %}	                            
+                                </li>
+                            </ul>
+                            <div class="panel-footer">
+                                {% if result_check %} {# result_check from session #}
+                                    {% set disabled = '' %}
+                                    {% if election.can_see_result %}
+                                        {% set disabled = 'disabled' %}
+                                    {% endif %}
+                                    {% 
+                                        set action_url = url_for(
+                                            name='front.result.show', elements=[election.id | as_str]
+                                        )
+                                    %}
+                                    <button  class="btn btn-info btn-md"
+                                        onClick="window.location.href='{{action_url | safe }}'" {{ disabled }}>
+                                        ...<b>Check Result</b>...
+                                    </button>
+                                {% else %}	
+                                    {% set disabled = 'disabled' %}
+                                    {% if election.statuses.is_running and not election.statuses.is_end %}
+                                        {% set disabled = '' %}
+                                    {% endif %}
+                                    {% 
+                                        set action_url = url_for(name='front.elections.show')
+                                    %}
+                                    <form id="vote-form-{{ election.id }}" action="{{ action_url | safe }}" 
+                                        method="POST" style="display: none;">
+                                        <input name="csrf" value="{{csrf_token}}" type="hidden"/>
+                                        <input name="election_id" value="{{election.id}}" type="hidden"/>
+                                        <input name="fingerprint_token" value="" type="hidden"/>
+                                    </form>
+                                    <a href="{{ action_url | safe }}" class="btn btn-info btn-md" {{ disabled }}
+                                        onclick="event.preventDefault();
+                                        document.getElementById('vote-form-{{ election.id }}').submit();">
+                                        ...<b>Vote</b>...
+                                    </a>
+
+                                    {# <button  class="btn btn-info btn-md" 
+                                        onClick="window.location.href='{{action_url | safe}}'"  {{ disabled }}>
+                                        ...<b>Vote</b>...
+                                    </button> #}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /item -->
+                {% else %}
+                    <p class="text-center"><strong>No  election  has been found. </strong></p>
+                {% endfor %}
+            </div>
+            <div class="text-center">
+                {% 
+                    set pagination_collections = pagination(
+                        current_page=elections.current_page,
+                        per_page=elections.per_page,
+                        total=elections.total,
+                    ) 
+                %}
+                {{pagination_view::render(pagination_items=pagination_collections)}}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript" src="/static/assets/js/fingerprintjs.v3.iife.min.js"></script>
+    <script type="text/javascript" src="/static/assets/js/fingerprintjs.init.js"></script>
+{% endblock %}

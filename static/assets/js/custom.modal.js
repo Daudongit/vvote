@@ -6,20 +6,26 @@ $('#modalComponet').on('show.bs.modal', function (event){
         var inputs = modal.find('.modal-body input')
         var selects = modal.find('.modal-body select')
         var textareas = modal.find('.modal-body textarea')
-            modal.find('.modal-title').text(button.data('action') +' '+$title)
-            if(button.data('action') == 'Edit')
-            {  
-                // const input = $('<input name="_method" value="PUT" type="hidden"/>')
-                // form.appendChild(input[0])
-                const param = {inputs,textareas,selects,button}
-                form.action = realUrl.replace('_', button.data('content').id)
-                editModal(param)
+        let form_url = postUrl
+        modal.find('.modal-title').text(button.data('action') +' '+$title)
+        if(button.data('action') == 'Edit')
+        {  
+            // const input = $('<input name="_method" value="PUT" type="hidden"/>')
+            // form.appendChild(input[0])
+            const param = {inputs, textareas, selects, button}
+            let id = button.data('content').id
+            if(Array.isArray(button.data('content'))){
+                id = button.data('content')[0].id
             }
-            else
-            {
-                $('.MultiFile-label').hide()
-                inputs.val('')
-                selects.val('').trigger('change')
-            }
+            form_url = updateUrl.replace('_', id)
+            editModal(param)
+        }
+        else
+        {
+            $('.MultiFile-label').hide()
+            inputs.val('')
+            selects.val('').trigger('change')
+        }
+        form.action = form_url
     }
 })

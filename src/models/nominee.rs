@@ -1,16 +1,22 @@
 use std::{env, fs};
-use jelly::chrono::Utc;
+
+use jelly::serde::Serialize;
 use jelly::error::error::Error;
 use jelly::chrono::NaiveDateTime;
-use crate::models::PaginatedEntity;
-use jelly::serde::{Serialize, Deserialize};
 use actix_easy_multipart::tempfile::Tempfile;
+use jelly::sqlx::{self, postgres::{PgPool, PgRow}, FromRow, Row as _};
+
+use crate::models::PaginatedEntity;
 use crate::admin::forms::MultipartNomineeForm;
-use jelly::sqlx::{self, postgres::{PgPool, PgRow}, FromRow, Row as _, };
+#[cfg(not(feature = "cloudinary"))]
+use crate::helpers::upload::local::LocalFileUpload as _;
+#[cfg(feature = "cloudinary")]
+use crate::helpers::upload::cloudinary::CloudinaryFileUpload as _;
 
 type ResultNomineePaginated = Result<PaginatedEntity<Nominee>, Error>;
+type NomineePayload<'a> = (&'a MultipartNomineeForm, &'a Option<String>);
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct Nominee{
     pub id: i32,
     pub first_name: String,
@@ -47,40 +53,33 @@ impl Nominee{
         let (offset, items_per_page) = super::calculate_pagination_offset(page)?;
         let total_nominee_count = super::get_aggregate_count("nominees", pool).await?;
         let sql = format!(
-            "select * from nominees order by updated_at desc limit {} offset {}",
+            "select * from nominees order by created_at, id asc limit {} offset {}",
             items_per_page, offset
         );
         let nominees: Vec<Nominee> = 
             sqlx::query_as(sql.as_str()).fetch_all(pool).await?;
         Ok((page, total_nominee_count as u64, nominees).into())
     }
-    
-    pub fn save_upload_image(image_file: Option<Tempfile>)->Result<Option<String>, Error>{
-        let upload_path = env::var("UPLOAD_PATH")?;
-        let mut image_fullname = None;
-        if let Some(mut image) = image_file {
-            let filename = image.file_name.take().unwrap_or_else(||".jpg".into());
-            if image.size > 0 && !filename.is_empty() {
-                let timestamp = Utc::now().timestamp().to_string();
-                let timestamp: String = timestamp.chars().rev().take(5).collect(); //asci chars
-                let new_name = String::from("nominee_") + &timestamp + &filename;
-                image.file.persist(upload_path +"/"+ &new_name)
-                .map_err(|err|{
-                    Error::Generic(format!("Error while saving file: {:?}", err))
-                })?;
-                image_fullname = Some(new_name);
+
+    pub async fn save_upload_image(image_file: Option<Tempfile>)->Result<Option<String>, Error>{
+        if let Some(image) = image_file {
+            if image.size > 0 && image.file_name.is_some() {
+                return image.persist_file("nominee_".into()).await;
+                // .map_err(Into::into);
             }
         }
-        Ok(image_fullname)
+        Ok(None)
     }
     
-    pub async fn create(form: &MultipartNomineeForm, image_name: Option<String>, pool: &PgPool)->Result<i32, Error>{
+    pub async fn create(nominee_payload: NomineePayload<'_>, pool: &PgPool)->Result<i32, Error>{
+        let (form, image_name) = nominee_payload;
         let id = sqlx::query!(
             "insert into nominees
             (first_name, last_name, email, image, description, created_at, updated_at)
             values ($1, $2, $3, $4, $5, now(), now()) returning id",
             form.first_name.value, form.last_name.value, form.email.value,
-            image_name.unwrap_or_default(), form.description.value
+            image_name.as_ref().map(|s|s.as_str()).unwrap_or_default(), 
+            form.description.value
         ).fetch_one(pool).await?.id;
         Ok(id)
     }
@@ -97,7 +96,8 @@ impl Nominee{
         Ok(())
     }
 
-    pub async fn update(form: &MultipartNomineeForm, id: i32, image_name: &Option<String>, pool: &PgPool)->Result<(),Error>{
+    pub async fn update(nominee_payload: NomineePayload<'_>, id: i32, pool: &PgPool)->Result<(),Error>{
+        let (form, image_name) = nominee_payload;
         if image_name.is_none() {
             sqlx::query!(
                 "update nominees 

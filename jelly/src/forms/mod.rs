@@ -4,8 +4,8 @@
 //! Ex:
 //!
 //! ```rust
-//! use jelly::forms::{EmailField, PasswordField, Validation};
 //! use serde::Deserialize;
+//! use jelly::forms::{EmailField, PasswordField, Validation};
 //!
 //! #[derive(Debug, Default, Deserialize)]
 //! pub struct MyForm {
@@ -40,6 +40,12 @@ pub use slug::SlugField;
 mod text;
 pub use text::TextField;
 
+mod number;
+pub use number::NumberField;
+
+mod date_time;
+pub use date_time::DateTimeField;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ParseStringError;
 
@@ -50,15 +56,15 @@ impl fmt::Display for ParseStringError {
 }
 
 /// List of possible validators
-pub enum Validator<'a> {
-    Min(usize),
-    Max(usize),
+pub enum Validator<'a, T = usize> {
+    Min(T),
+    Max(T),
     Contain(&'a str)
 }
 
 /// A trait that Forms can implement for validation. Each field type implements this trait, so you
 /// can simply write your validation method as `field.is_valid()`.
-pub trait Validation {
+pub trait Validation<I = usize> {
     /// Checks if the data held is valid. Should return a bool value.
     fn is_valid(&mut self) -> bool {
         false
@@ -71,7 +77,8 @@ pub trait Validation {
     }
 
     /// Checks if the data held is valid with validators. Should return a bool value.
-    fn is_valid_with_validators(&mut self, field_name: &str, _: Vec<Validator>) -> bool {
+    fn is_valid_with_validators(&mut self, field_name: &str, _: Vec<Validator<I>>) -> bool
+    {
         self.is_valid_field(field_name)
     }
 

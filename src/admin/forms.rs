@@ -1,9 +1,15 @@
-use jelly::forms::{TextField, EmailField, DateField, Validation, Validator::{Max, Min}};
-use actix_easy_multipart::{MultipartForm, tempfile::Tempfile, text::Text};
-use serde::{Deserialize, Serialize, Serializer, ser::SerializeStruct};
+use jelly::forms::Validator::{Max, Min};
 use jelly::guards::csrf::extractor::{CsrfGuarded, CsrfToken};
+use actix_easy_multipart::{MultipartForm, tempfile::Tempfile, text::Text};
+use jelly::serde::{Deserialize, Serialize, Serializer, ser::SerializeStruct};
+use jelly::forms::{TextField, EmailField, Validation, NumberField, DateTimeField};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize)]
+pub struct RequestQParam{
+    pub page: Option<u16>,
+}
+
+#[derive(Debug, Deserialize)] 
 pub struct DeleteForm {
     pub csrf: CsrfToken,
     pub removed_image: Option<String>
@@ -15,13 +21,30 @@ impl CsrfGuarded for DeleteForm {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct ElectionForm {
     pub csrf: CsrfToken,
     pub title: TextField,
-    pub start_date: DateField,
-    pub end_date: DateField,
-    pub slot: Vec<u64>
+    pub start_date: DateTimeField,
+    pub end_date: DateTimeField,
+    pub slots: Vec<u64>
+}
+
+impl From<Vec<(String, String)>> for ElectionForm {
+    fn from(form_vec: Vec<(String, String)>)->Self{
+        let mut form = Self::default();
+        for (key, value) in form_vec {
+            match key.as_str() {
+                "csrf" => form.csrf = value.into(),
+                "title" => form.title = value.into(),
+                "start_date" => form.start_date = value.into(),
+                "end_date" => form.end_date = value.into(),
+                "slots" => form.slots.push(value.parse().unwrap_or_default()),
+                _ => ()
+            }
+        }
+        form
+    }
 }
 
 impl CsrfGuarded for ElectionForm {
@@ -40,11 +63,18 @@ impl Validation for ElectionForm {
             self.end_date.errors.push("end_date must be gerater than start_date.".into());
             is_valid = false;
         }
+        for slot in &self.slots{
+            let slot = *slot;
+            if slot < 1 {
+                self.title.errors.push(format!("`slots`: {slot} is not valid slot"));
+                is_valid = false;
+            }
+        }
         is_valid
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct ToggleElectionForm {
     pub csrf: CsrfToken,
     pub status: u8
@@ -56,7 +86,7 @@ impl CsrfGuarded for ToggleElectionForm {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct ElectionVisibilityForm {
     pub csrf: CsrfToken,
     pub can_see_result: bool
@@ -107,9 +137,15 @@ impl CsrfGuarded for MultipartNomineeForm {
 
 impl Validation for MultipartNomineeForm {
     fn is_valid(&mut self) -> bool {
-        self.first_name.is_valid_with_validators("first_name", vec![Min(3), Max(100)]) &&
-        self.last_name.is_valid_with_validators("last_name", vec![Min(3), Max(100)]) &&
-        self.description.is_valid_with_validators("description", vec![Min(3), Max(250)]) &&
+        self.first_name.is_valid_with_validators(
+            "first_name", vec![Min(3), Max(100)]
+        ) &&
+        self.last_name.is_valid_with_validators(
+            "last_name", vec![Min(3), Max(100)]
+        ) &&
+        self.description.is_valid_with_validators(
+            "description", vec![Min(3), Max(250)]
+        ) &&
         self.email.is_valid_field("email")
     }
 }
@@ -129,11 +165,26 @@ impl Serialize for MultipartNomineeForm {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct SlotForm {
     pub csrf: CsrfToken,
-    pub position_id: u32,
+    pub position_id: NumberField<u32>,
     pub nominees: Vec<u64>
+}
+
+impl From<Vec<(String, String)>> for SlotForm{
+    fn from(form_vec: Vec<(String, String)>) -> Self {
+        let mut form = Self::default();
+        for (key, value) in form_vec {
+            match key.as_str() {
+                "csrf" => form.csrf = value.into(),
+                "position_id" => form.position_id = value.parse().unwrap_or_default(),
+                "nominees" => form.nominees.push(value.parse().unwrap_or_default()),
+                _ => ()
+            }
+        }
+        form
+    }
 }
 
 impl CsrfGuarded for SlotForm {
@@ -143,5 +194,20 @@ impl CsrfGuarded for SlotForm {
 }
 
 impl Validation for SlotForm {
-    fn is_valid(&mut self) -> bool {true}
+    fn is_valid(&mut self) -> bool {
+        let mut is_valid = 
+            self.position_id.is_valid_with_validators(
+                "position_id", vec![Min(1)]
+            );
+        for nominee in &self.nominees{
+            let nominee = *nominee;
+            if nominee < 1 {
+                self.position_id.errors.push(
+                    format!("`nominees`: {nominee} is not valid nominee")
+                );
+                is_valid = false;
+            }
+        }
+        is_valid
+    }
 }

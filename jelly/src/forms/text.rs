@@ -1,8 +1,9 @@
-use super::{Validation, ParseStringError, Validator::{self, Max, Min, Contain}};
-use serde::{Deserialize, Deserializer, Serialize};
-use std::str::FromStr;
-use std::ops::Deref;
 use std::fmt;
+use std::ops::Deref;
+use std::str::FromStr;
+
+use serde::{Deserialize, Deserializer, Serialize};
+use super::{Validation, ParseStringError, Validator::{self, Max, Min, Contain}};
 
 
 /// A generic field for validating that an input is not blank.

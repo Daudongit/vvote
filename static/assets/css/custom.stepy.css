@@ -1,0 +1,12 @@
+/* custom form step */
+/* .stepy-tab ul{
+    display: flex;
+    justify-content: space-around;
+} */
+
+.stepy-titles li.current-step div, .stepy-titles li div{
+    width: 120px;
+    height: 40px;
+    border-radius: 5px;
+    line-height: 40px;
+}

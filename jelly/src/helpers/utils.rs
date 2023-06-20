@@ -1,13 +1,13 @@
 //! Implements some framework-level pieces, primarily useful in debugging scenarios.
 
-use actix_web::{HttpRequest, HttpResponse};
-use actix_web::web::ServiceConfig;
-use actix_web::http::Method;
-use actix_web::Result;
 use tera::Context;
+use actix_web::Result;
+use actix_web::http::Method;
+use actix_web::web::ServiceConfig;
+use actix_web::{HttpRequest, HttpResponse};
 
-use crate::error::error::Error;
 use crate::request::Render;
+use crate::error::error::Error;
 
 /// default service handler (for 404 and others)
 pub async fn default_service_handler(request: HttpRequest) -> Result<HttpResponse, Error> {
@@ -27,9 +27,12 @@ pub async fn not_found(request: HttpRequest) -> Result<HttpResponse, Error> {
 #[cfg(feature = "static")]
 pub fn static_handler(config: &mut ServiceConfig) {
     let static_path =
-        std::env::var("STATIC_ROOT").expect("Running in debug without STATIC_ROOT set!");
+        std::env::var("STATIC_ROOT")
+        .expect("Running in debug without STATIC_ROOT set!");
 
-    let fs = actix_files::Files::new("/static", &static_path);
+    let fs = actix_files::Files::new(
+        "/static", &static_path
+    );
     config.service(fs);
 }
 

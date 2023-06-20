@@ -1,8 +1,9 @@
-use serde::{Deserialize, Deserializer, Serialize};
-use super::{Validation, ParseStringError};
-use std::str::FromStr;
-use std::ops::Deref;
 use std::fmt;
+use std::ops::Deref;
+use std::str::FromStr;
+
+use super::{Validation, ParseStringError};
+use serde::{Deserialize, Deserializer, Serialize};
 
 
 /// A field for validating that a URL slug is valid for a URL.

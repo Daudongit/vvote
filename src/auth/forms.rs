@@ -1,6 +1,6 @@
-use jelly::guards::csrf::extractor::{CsrfGuarded, CsrfToken};
+use jelly::serde::{Deserialize, Serialize};
 use jelly::forms::{EmailField, PasswordField, Validation};
-use serde::{Deserialize, Serialize};
+use jelly::guards::csrf::extractor::{CsrfGuarded, CsrfToken};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AdminLoginForm {
@@ -11,11 +11,23 @@ pub struct AdminLoginForm {
 
 impl Validation for AdminLoginForm {
     fn is_valid(&mut self) -> bool {
-        self.email.is_valid() && !self.password.value.is_empty()
+        self.email.is_valid_field("email") && 
+        !self.password.is_emty_value("password")
     }
 }
 
 impl CsrfGuarded for AdminLoginForm {
+    fn csrf_token(&self) -> &CsrfToken {
+        &self.csrf
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ValidCsrfForm {
+    pub csrf: CsrfToken
+}
+
+impl CsrfGuarded for ValidCsrfForm {
     fn csrf_token(&self) -> &CsrfToken {
         &self.csrf
     }

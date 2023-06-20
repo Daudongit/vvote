@@ -1,9 +1,10 @@
-use jelly::actix_web::{web::{Form, Path}, HttpRequest};
-use crate::admin::forms::ToggleElectionForm;
-use jelly::guards::csrf::extractor::Csrf;
-use crate::models::election::Election;
-use jelly::prelude::*;
 use jelly::Result;
+use jelly::prelude::*;
+use jelly::guards::csrf::extractor::Csrf;
+use jelly::actix_web::{web::{Form, Path}, HttpRequest};
+
+use crate::models::election::Election;
+use crate::admin::forms::ToggleElectionForm;
 
 type ToggleForm = Csrf<Form<ToggleElectionForm>>;
 

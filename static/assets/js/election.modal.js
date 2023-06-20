@@ -1,9 +1,9 @@
 $title = 'election'
 function editModal({inputs,button}){
     const content = button.data('content')
-    const slots = content.slots.map((slot)=>slot.id)
-    inputs[0].value = content.title
-    inputs[2].value = content.start
-    inputs[3].value = content.end
+    let [election, slots] = content
+    inputs[0].value = election.title
+    inputs[2].value = election.start
+    inputs[3].value = election.end
     $('.select2').val(slots).trigger('change')
 }

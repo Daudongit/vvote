@@ -1,36 +1,75 @@
 use std::env;
 use actix_web::cookie::Key;
 use actix_session::SessionMiddleware;
+#[cfg(feature = "redis-session")]
+use actix_session::storage::RedisSessionStore;
+#[cfg(feature = "cookie-session")]
 use actix_session::storage::CookieSessionStore;
+#[cfg(feature = "redis-actor-session")]
+use actix_session::storage::RedisActorSessionStore;
 
-#[cfg(not(feature = "production"))]
-pub fn create_session()->SessionMiddleware<CookieSessionStore>{
+fn redis_connection_key()->(String, String){
+    let redis_connection = 
+        env::var("REDIS_CONNECTION_STRING")
+        .expect("REDIS_CONNECTION_STRING not set!");
     let key = env::var("SECRET_KEY").expect("SECRET_KEY not set!");
-    SessionMiddleware::builder(
-        CookieSessionStore::default(), Key::from(key.as_bytes())
-    )
+    (redis_connection, key)
+}
+
+#[cfg(feature = "redis-actor-session")]
+pub async fn create_session_store_key()->(RedisActorSessionStore, Key){
+    let (redis_connection_key, key) = redis_connection_key();
+    let store = RedisActorSessionStore::new(redis_connection_key);
+    (store, Key::from(key.as_bytes()))
+}
+
+#[cfg(feature = "redis-session")]
+pub async fn create_session_store_key()->(RedisSessionStore, Key){
+    let (redis_connection_key, key) = redis_connection_key();
+    let store = 
+       match RedisSessionStore::new(redis_connection_key).await {
+            Ok(store) => store,
+            Err(err) => {
+                dbg!(err);
+                panic!("Unable to establish redis session")  
+            } 
+       };
+    (store, Key::from(key.as_bytes()))
+}
+
+#[cfg(feature = "cookie-session")]
+pub async fn create_session_store_key()->(CookieSessionStore, Key){
+    let (_, key) = redis_connection_key();
+    let store = CookieSessionStore::default();
+    (store, Key::from(key.as_bytes()))
+}
+
+#[cfg(feature = "redis-actor-session")]
+pub fn create_session(store: RedisActorSessionStore, key: Key)
+    ->SessionMiddleware<RedisActorSessionStore>{
+    SessionMiddleware::builder(store, key)
     .cookie_name("sessionid".into())
     .cookie_secure(false)
     .cookie_path("/".into())
     .build()
 }
 
-#[cfg(feature = "production")]
-pub fn create_session()->SessionMiddleware<CookieSessionStore>{
-    // !production needs no domain set, because browsers.
-    let domain = env::var("SESSIONID_DOMAIN").expect("SESSIONID_DOMAIN not set!");
-    let key = env::var("SECRET_KEY").expect("SECRET_KEY not set!");
-    SessionMiddleware::builder(
-        CookieSessionStore::default(), key.as_bytes()
-    )
+#[cfg(feature = "redis-session")]
+pub fn create_session(store: RedisSessionStore, key: Key)
+    ->SessionMiddleware<RedisSessionStore>{
+    SessionMiddleware::builder(store, key)
     .cookie_name("sessionid".into())
-    .cookie_secure(true)
+    .cookie_secure(false)
     .cookie_path("/".into())
-    .cookie_domain(Some(domain))
-    // .cookie_same_site(SameSite::Lax)
-    // .cookie_http_only(false)
-    // .session_length(SessionLength::BrowserSession {
-    //     state_ttl: Some(Duration::new(259200, 259200)),
-    // })
+    .build()
+}
+
+#[cfg(feature = "cookie-session")]
+pub fn create_session(store: CookieSessionStore, key: Key)
+    ->SessionMiddleware<CookieSessionStore>{
+    SessionMiddleware::builder(store, key)
+    .cookie_name("sessionid".into())
+    .cookie_secure(false)
+    .cookie_path("/".into())
     .build()
 }

@@ -1,8 +1,11 @@
-use crate::models::{
-    election::Election, result::Results, slot::Slot, position::Position, nominee::Nominee
-};
-use jelly::prelude::*;
 use jelly::Result;
+use jelly::prelude::*;
+
+use crate::models::{
+    position::Position, nominee::Nominee,
+    election::Election, result::Results, slot::Slot
+};
+
 
 
 /// Returns an overview of everything in the system.

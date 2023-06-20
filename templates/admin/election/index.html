@@ -1,52 +1,186 @@
-
-
-{# <h4>{{ url_for(name="admin.nominees.index") }}</h4>
-<h4>{{ url_for(name="admin.nominees.update",elements=["1"]) }}</h4>
-<h4>{{ url_for(name="admin.elections.index") }}</h4>
-<h4>{{ url_for(name="admin.positions.index") }}</h4>
-<h4>{{ url_for(name="admin.slots.index") }}</h4> #}
-
-{# <h4>{{ url_for(name="admin.nominees.delete") }}</h4> #}
-{# <h4>{{ url_for(name="admin.elections.store") }}</h4>
-<h4>{{ url_for(name="admin.elections.update") }}</h4>
-<h4>{{ url_for(name="admin.elections.delete") }}</h4> #}
-{# <h4>{{ url_for(name="admin.positions.store") }}</h4>
-<h4>{{ url_for(name="admin.positions.update") }}</h4>
-<h4>{{ url_for(name="admin.positions.delete") }}</h4> #}
-{# <h4>{{ url_for(name="admin.slots.store") }}</h4>
-<h4>{{ url_for(name="admin.slots.update") }}</h4>
-<h4>{{ url_for(name="admin.slots.delete") }}</h4> #}
-
-{% include "admin/layout/_sidebar.html" %}
-{# <h4>{{ active(route=url_for(name='admin.dashboard'), current_path=current_path) }}</h4>
- <a href="{{ url_for(name='admin.dashboard') }}">Dashboard</a> 
-<a href="{{ url_for(name='admin.results.index') }}">Result</a>   #}
-{# <h4>current_path: {{ current_path }}</h4>
-<h4>current_uri: {{ current_uri }}</h4> #}
-{# <h4>{{ url_for(name="admin.results.index") }}</h4> #}
-{# <h3>{{ active(route=url_for(name="admin.results.index"), current_path=current_path) }}</h3>
-<h3>{{ active(route=url_for(name="admin.elections.index"), current_path=current_path) }}***election****</h3> #}
-{# <h3>{{ active(url=url_for(name='admin.nominees.index.store'), current_path=current_path) }}</h3> #}
-
-<h3>Hello from admin election</h3>
-<h4>{{ now() | date(format="%Y-%m-%d") }}</h4>
-<h4>{{ now() | date(format="%Y/%m/%d") }}</h4>
-{# <h3>{{ active(name="hello") }}</h3>
-<h3>{{ active(name="hello") }}</h3>
-<h3>{{ active(name="hello") }}</h3> #}
-<h3>get_random: {{ get_random(start=0, end=10) }}</h3>
-<h3>get_random: {{ get_random(start=0, end=10) }}</h3>
-{% set election_items = elections.data.0 %}
-{% set slots = elections.data.1 %}
-<ul>
-    {% for election in election_items %}
-        <li>{{loop.index}}. {{election.title}}</li>
-        {% if slots[election.id] %}
-            {% set slot = slots[election.id] %}
-            <ul data-json="{{ slot | json_encode() | safe }}">
-                <li> {{slot.id}}</li>
-                <li> {{slot.position_id}}</li>
-            </ul>
-        {% endif %}
-    {% endfor %}
-</ul>
+{% extends "layouts/app.html" %}
+{% import "admin/macros/modal.html" as modal %}
+{% import "admin/macros/delete.html" as delete %}
+{% import "admin/election/macros.html" as election_partial %}
+{% import "admin/macros/pagination.html" as pagination_view %}
+{% block css %}
+    <link rel="stylesheet" href="/static/assets/css/datetimepicker.css">
+    <link rel="stylesheet" type="text/css" href="/static/assets/css/select2.min.css"> 
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Session Election</div>
+                    <div class="panel-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Title</th>
+                                    <th>End</th>
+                                    <th>Votes</th>
+                                    <th>Status</th>
+                                    <th>Edit</th>
+                                    <th>Remove</th>
+                                    <th>Lock/Unlock</th>
+                                    <th>Unsee/See(Result)</th>
+                                    <th>Add</th>
+                                </tr>
+                            </thead>
+                            {% set election_items = elections.data.0 %}
+                            {% set election_slots = elections.data.1 %}
+                            {% set start = (elections.current_page - 1) * elections.per_page + 1 %}
+                            {% for election in election_items %}
+                                <tr>
+                                    <td scope="row">{{start + loop.index0}}</td>
+                                    <td>
+                                        {% 
+                                            set result_url = url_for(
+                                                name='admin.results.show', elements=[election.id | as_str]
+                                            )
+                                        %}
+                                        <a href="{{result_url | safe}}"> {{election.title}} </a>
+                                    </td>
+                                    <td>
+                                        {{election.end_timeago}}
+                                        ({{election.end | date(format="%l %p on %b %-d")}})
+                                    </td>
+                                    {# <td>{{election.end | date(format="around %l %p on %b %-d")}}</td> #}
+                                    <td>{{election.results_count}}</td>
+                                    <td>
+                                        {% if election.statuses.is_end %}
+                                            <span class="label label-danger">Closed</span>
+                                        {% elif election.statuses.is_locked %}
+                                            <span class="label label-danger">Locked</span>
+                                        {% elif election.statuses.is_comingsoon %}
+                                            <span class="label label-info">Soon</span>
+                                        {% elif election.statuses.is_running %}
+                                            <span class="label label-success">Ongoing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set election_and_slots = [election, election_slots[election.id]] %}
+                                        <a class="btn btn-info btn-sm" href="#modalComponet" 
+                                            data-toggle="modal" data-action="Edit" 
+                                            data-content="{{election_and_slots | json_encode()}}">
+                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{
+                                            delete::delete_btn(
+                                                id=election.id,
+                                                route=url_for(
+                                                    name='admin.elections.delete', elements=[election.id | as_str]
+                                                )
+                                            ) | safe
+                                        }}
+                                    </td>
+                                    <td>
+                                        {% if election.statuses.is_locked %}
+                                            {% set fa = 'fa fa-lock' %}
+                                        {% else %}
+                                            {% set fa = 'fa fa-unlock' %}
+                                        {% endif %}
+                                        {% 
+                                            set action_url = url_for(
+                                                name='admin.suspend.update', elements=[election.id | as_str]
+                                            ) 
+                                        %}
+                                        <form action="{{action_url | safe}}" method="POST">
+                                            <input name="csrf" value="{{csrf_token}}" type="hidden"/>
+                                            <input name="status" value="{{election.status}}" type="hidden"/>
+                                            <button type="submit" class="btn btn-sm">
+                                                <i class="{{fa}}" aria-hidden="true"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        {% if election.can_see_result %}
+                                            {% set fa = 'fa fa-eye' %}
+                                            {% set status = 'success' %}
+                                        {% else %}
+                                            {% set fa = 'fa fa-eye-slash' %}
+                                            {% set status = 'danger' %}
+                                        {% endif %}
+                                        {% 
+                                            set action_url = url_for(
+                                                name='admin.visibility.update', elements=[election.id | as_str]
+                                            )
+                                        %}
+                                        <form action="{{action_url | safe}}" method="POST">
+                                            <input name="csrf" value="{{csrf_token}}" type="hidden"/>
+                                            <input name="can_see_result" value="{{election.can_see_result}}" type="hidden"/>
+                                            <button type="submit" class="btn btn-sm btn-{{status}}">
+                                                <i class="{{fa}}" aria-hidden="true"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    {% if loop.index0 == 0 %}
+                                        <td>
+                                            <a class="btn btn-success btn-sm" href="#modalComponet" 
+                                                data-toggle="modal" data-action="Create">
+                                                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
+                                    {% else %}
+                                        <td>
+                                            <button type="submit" class="btn btn-sm" disabled>
+                                                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                            </button>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="8">
+                                        <div class="text-center">No session election has been found. Try to add one </div>
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-success btn-sm" href="#modalComponet" 
+                                            data-toggle="modal" data-action="Create">
+                                            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <div class="text-center">
+                            {% 
+                                set pagination_collections = pagination(
+                                    current_page=elections.current_page,
+                                    per_page=elections.per_page,
+                                    total=elections.total,
+                                ) 
+                            %}
+                            {{pagination_view::render(pagination_items=pagination_collections)}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% set post_url = url_for(name='admin.elections.store') %}
+{% endblock %}
+{% block modal %}
+    {{ 
+        modal::modal(
+            title="Create Year", 
+            action=post_url,
+            body=election_partial::election_modal_template(slot_collection=slots)
+        )
+    }}
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        const postUrl = "{{ post_url | safe }}"
+        const updateUrl = "{{ url_for(name='admin.elections.update', elements=['_']) | safe }}"
+    </script>
+    <script type="text/javascript" src="/static/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script type="text/javascript" src="/static/assets/js/select2.min.js"></script>
+    <script type="text/javascript" src="/static/assets/js/election.modal.js"></script>
+    <script type="text/javascript" src="/static/assets/js/select2_init.js"></script>
+    <script type="text/javascript" src="/static/assets/js/datetime_init.js"></script>
+{% endblock %}

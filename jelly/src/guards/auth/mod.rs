@@ -1,15 +1,16 @@
 pub mod auth_config;
 
-
 use std::cell::RefCell;
-use auth_config::AuthConfig;
 use std::task::{Context, Poll};
-use crate::error::template::render;
-use crate::request::Authentication;
+
+use auth_config::AuthConfig;
 use actix_web::{Error, HttpResponse};
 use actix_web::http::header::LOCATION;
 use futures::future::{ok, Either, Ready};
 use actix_web::dev::{ServiceRequest, ServiceResponse, Service, Transform};
+
+use crate::error::template::render;
+use crate::request::Authentication;
 
 
 /// A guard that enables route and scope authentication gating.
@@ -24,7 +25,6 @@ impl<S> Transform<S, ServiceRequest> for Auth
 where
     S: Service<ServiceRequest, Response = ServiceResponse, Error = Error>,
     S::Future: 'static,
-    // B: 'static,
 {
     type Response = ServiceResponse;
     type Error = Error;
@@ -57,7 +57,6 @@ impl<S> Service<ServiceRequest> for AuthMiddleware<S>
 where
     S: Service<ServiceRequest, Response = ServiceResponse, Error = Error>,
     S::Future: 'static,
-    // B: 'static,
 {
     type Error = Error;
     type Response = ServiceResponse;
@@ -68,7 +67,8 @@ where
     }
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let auth_config = self.auth_config.clone().unwrap_or(AuthConfig::default());
+        let auth_config = 
+            self.auth_config.clone().unwrap_or(AuthConfig::default());
         let (request, payload) = req.into_parts();
         let status = request.is_authenticated(auth_config);
 

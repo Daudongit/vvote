@@ -1,9 +1,11 @@
-use serde::{Deserialize, Deserializer, Serialize};
-use super::{Validation, ParseStringError};
-use std::str::FromStr;
-use std::ops::Deref;
-use zxcvbn::zxcvbn;
 use std::fmt;
+use std::ops::Deref;
+use std::str::FromStr;
+
+use zxcvbn::zxcvbn;
+use serde::{Deserialize, Deserializer, Serialize};
+
+use super::{Validation, ParseStringError};
 
 
 /// A field for validating password strength. Will also include
@@ -16,11 +18,17 @@ pub struct PasswordField {
 }
 
 impl PasswordField {
-    pub fn validate_with(&mut self, user_inputs: &[&str], field_name: &str) -> bool {
-        if self.value == "" {
-            self.errors.push(format!("{field_name} cannot be blank."));
-            return false;
+    pub fn is_emty_value(&mut self, field_name: &str)->bool{
+        let mut is_emty = false;
+        if self.value.is_empty() {
+            self.errors.push(format!("{field_name} can not be blank."));
+            is_emty = true;
         }
+        is_emty
+    }
+
+    pub fn validate_with(&mut self, user_inputs: &[&str], field_name: &str) -> bool {
+        if self.is_emty_value(field_name){ return false; }
 
         // The unwrap is safe, as it only errors if the
         // password is blank, which we already

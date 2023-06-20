@@ -1,9 +1,12 @@
 use jelly::Result;
 use jelly::prelude::*;
 use jelly::guards::csrf::extractor::Csrf;
-use crate::models::{position::Position, RequestQParam};
 use jelly::actix_web::{web::{Query, Form, Path}, HttpRequest};
-use crate::admin::forms::{PositonForm as PositonEntityForm, DeleteForm as DeleteEntityForm};
+
+use crate::models::position::Position;
+use crate::admin::forms::{
+    PositonForm as PositonEntityForm, DeleteForm as DeleteEntityForm, RequestQParam
+};
 
 type DeleteForm = Csrf<Form<DeleteEntityForm>>;
 type PositonForm = Csrf<Form<PositonEntityForm>>;

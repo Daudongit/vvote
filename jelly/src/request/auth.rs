@@ -1,11 +1,12 @@
 
-use crate::guards::{AuthConfig, AuthSessionName};
-use actix_session::SessionExt as _;
-use actix_web::HttpMessage as _;
-use crate::error::error::Error;
-use actix_web::HttpRequest;
-use crate::accounts::User;
 use serde_json::Value;
+use actix_web::HttpRequest;
+use actix_web::HttpMessage as _;
+use actix_session::SessionExt as _;
+
+use crate::accounts::User;
+use crate::error::error::Error;
+use crate::guards::{AuthConfig, AuthSessionName};
 
 /// `Authentication` is kind of a request guard - it returns a Future which will resolve
 /// with either the current authenticated user, or "error" out if the user has no session data
@@ -29,9 +30,6 @@ pub trait Authentication {
 impl Authentication for HttpRequest {
     // #[inline(always)]
     fn is_authenticated(&self, auth_config: AuthConfig) -> Result<(bool, String), Error> {
-        if is_filter_routes(self)? {
-            return Ok((true, "/".into()));
-        }
         let auth_config_name = auth_config.name.as_ref();
         let is_authorized =
             self.get_session().get::<Value>(auth_config_name)?.is_some();
@@ -54,29 +52,4 @@ impl Authentication for HttpRequest {
             None => Ok(User::default()),
         }
     }
-}
-
-
-fn is_filter_routes(request: &HttpRequest) -> Result<bool, Error>{
-    let filter_routes = filter_routes()?;
-    Ok(request.match_pattern().map_or_else(
-        || {
-            filter_routes.contains(&(
-                request.method().clone(), request.path().replace("//","/")
-            ))
-        },
-        |p|filter_routes.contains(
-            &(request.method().clone(), p.replace("//","/"))
-        )
-    ))
-}
-
-use std::collections::HashSet;
-use actix_web::http::Method;
-
-fn filter_routes()->Result<HashSet<(Method, String)>, Error>{
-    let mut routes_set = HashSet::new();
-    routes_set.insert((Method::GET, "/".into()));
-    routes_set.insert((Method::GET, "/admin/dashboard/".into()));
-    Ok(routes_set)
 }

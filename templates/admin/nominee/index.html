@@ -1,6 +1,7 @@
 {% extends "layouts/app.html" %}
 {% import "admin/macros/modal.html" as modal %}
 {% import "admin/macros/delete.html" as delete %}
+{% import "admin/nominee/macros.html" as nominee_partial %}
 {% import "admin/macros/pagination.html" as pagination_view %}
 {% block css %}
     <link rel="stylesheet" type="text/css" href="/static/assets/css/MultiFileUpload.css"> 
@@ -75,7 +76,7 @@
                             {% endfor %}
                         </table>
                         <div class="text-center">
-                            {% 
+                            {%
                                 set pagination_collections = pagination(
                                     current_page=nominees.current_page,
                                     per_page=nominees.per_page,
@@ -91,51 +92,22 @@
             </div>
         </div>
     </div>
+    {% set post_url = url_for(name='admin.nominees.store') %}
 {% endblock %}
 {% block modal %}
     {{ 
         modal::modal(
             title="Create Nominee", 
-            action=url_for(name='admin.nominees.store'),
+            action=post_url,
             enctype="multipart/form-data",
-            body=`
-                <label for="recipient-name" class="control-label">First Name:</label>
-                <input type="text" class="form-control" id="first_name" name="first_name">
-                <label for="recipient-name" class="control-label">Last Name:</label>
-                <input type="text" class="form-control" id="last_name" name="last_name">
-                <label for="recipient-name" class="control-label">Email:</label>
-                <input type="text" class="form-control" id="email" name="email">
-                <label for="description" class="control-label"> Description:</label>
-                <input type="text" class="form-control" id="description" name="description"/>
-                <input type="hidden" id="removed_image" name="removed_image"/>
-                <div class="file-upload-previews">
-                    <div class="MultiFile-label">
-                        <a class="MultiFile-remove" href="#" id="remove_img">x</a> 
-                        <span>
-                            <span class="MultiFile-label" 
-                                title="File selected: image.jpg">
-                                <span class="MultiFile-title">Image</span>
-                                <img class="MultiFile-preview" 
-                                    style="max-height:100px;max-width:100px;" 
-                                    src="#">
-                            </span>
-                        </span>
-                        <input type="hidden" name="previous_image"  id="previous_image"/>
-                    </div>
-                </div>
-                <div class="file-upload">
-                    <input type="file" name="image" class="file-upload-input with-preview"  
-                        title="Click to add files" maxlength="1" accept="jpg|jpeg|png" 
-                        data-maxsize="1024">
-                    <span style="color:#000">CLICK OR DRAG IMAGE HERE</span>
-                </div>
-            `
+            body=nominee_partial::nominee_modal_template()
         ) 
     }}
 {% endblock %}
 {% block js %}
     <script type="text/javascript">
-         const realUrl = "{{ url_for(name='admin.nominees.update', elements=['_']) | safe }}"
+        const postUrl = "{{ post_url | safe }}"
+        const updateUrl = "{{ url_for(name='admin.nominees.update', elements=['_']) | safe }}"
     </script>
     <script src="/static/assets/js/readmore.js"></script>
     <script type="text/javascript" src="/static/assets/js/jQuery.MultiFile.min.js"></script>

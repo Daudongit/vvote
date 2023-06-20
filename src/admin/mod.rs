@@ -1,27 +1,23 @@
 //! Admin module.
 
-use jelly::actix_web::web::{get, post, resource, scope, ServiceConfig};
-// use crate::csrf::get_auth_config;
-// use jelly::guards::Auth;
-// use std::cell::RefCell;
+use std::cell::RefCell;
 
+use jelly::guards::Auth;
+use jelly::actix_web::web::{get, post, resource, scope, ServiceConfig};
+
+use crate::auth::views::admin;
+use crate::auth::config::admin_auth_config;
 
 pub mod views;
 pub mod forms;
 
 pub fn configure(config: &mut ServiceConfig) {
-
-    // let auth = Auth{auth_config: RefCell::new(Some(get_auth_config()))};
+    let auth = Auth{auth_config: RefCell::new(Some(admin_auth_config()))};
     config.service(
-        scope("/admin")
-            // .wrap(auth)
+        scope("/admin").wrap(auth)
             .service(
                 resource("/")
-                    .route(get().to(views::dashboard::index)).name("admin.index"),
-            )
-            .service(
-                resource("/download/")
-                    .route(get().to(views::export::generate)).name("admin.download"),
+                    .route(get().to(admin::show_login_form)).name("admin.index"),
             )
             .service(
                 resource("/dashboard/")
@@ -126,11 +122,3 @@ pub fn configure(config: &mut ServiceConfig) {
     );
 }
 
-
-// articles.index
-// articles.create
-// articles.store
-// articles.show
-// articles.edit
-// articles.update
-// articles.destroy

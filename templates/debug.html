@@ -1,1 +1,4 @@
-<pre>{{ positions | json_encode(pretty=true) | safe}}</pre>
+{% set slot_items = slots.data.0 %}
+{% set slot_nominees = slots.data.1 %}
+<pre>{{ slot_items | json_encode(pretty=true) | safe}}</pre>
+<pre>{{ slot_nominees | json_encode(pretty=true) | safe}}</pre>

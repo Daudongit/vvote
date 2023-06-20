@@ -1,0 +1,41 @@
+{% macro election_modal_template(slot_collection) %}
+    <label for="title" class="control-label"> Title:</label>
+    <input type="text" class="form-control" id="title" name="title" required/>
+    <label for="name" class="control-label"> Slots:</label>
+    <select name="slots" id="slot" class="select2 form-control" 
+        multiple required>
+        {% for slot in slot_collection %}
+            <option value="{{slot.id}}">
+                {{slot.position_name ~ '-slot-' ~ slot.id}}
+            </option>
+        {% endfor %}
+    </select>
+    <div class="form-group">
+        <label class="control-label col-md-">Start Date</label>
+        <div class="col-md-">
+            <div class="input-group date form_datetime">
+                <input type="text" class="form-control" 
+                    readonly="" size="16" name="start_date" required>
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-danger date-set">
+                        <i class="fa fa-calendar"></i>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-md-">End Date</label>
+        <div class="col-md-">
+            <div class="input-group date form_datetime">
+                <input type="text" class="form-control" 
+                    readonly="" size="16" name="end_date" required>
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-danger date-set">
+                        <i class="fa fa-calendar"></i>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+{% endmacro election_modal_template %}

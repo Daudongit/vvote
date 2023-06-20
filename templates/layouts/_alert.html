@@ -22,7 +22,6 @@
         </button>
           <ul>
             {% set form_data = form | default(value=flash_form) %}
-            {# <pre>{{ form_data | json_encode(pretty=true) | safe}}</pre> #}
             {% for key, value in form_data %}
                 {% if value.errors %}
                   {% if value.errors | length > 0 %}
@@ -31,7 +30,7 @@
                       {% endfor %}
                   {% endif %}
                 {% else %}
-                  {% if value is iterable %}
+                  {% if value is object %}
                     {% for k, v in value %}
                       {% if k == 'errors' and v | length > 0 %}
                         {% for error in v %}
@@ -62,7 +61,6 @@
 {% endif %}
 
 {% if error %}
-  {# <pre>{{ error | json_encode(pretty=true) | safe}}</pre> #}
     <div class="alert alert-danger text-center" alert-dismissible role="alert">
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
           <span aria-hidden="true">&times;</span>

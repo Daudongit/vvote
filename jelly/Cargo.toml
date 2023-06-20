@@ -11,7 +11,7 @@ opt-level = 3
 
 [dependencies]
 actix-files = { version = "0.6", optional = true }
-actix-session = { version = "0.7", features = ["cookie-session"] }
+actix-session = { version = "0.7" }
 actix-web = "4"
 background-jobs = "0.13.0"
 sqlx = { version = "0.6.2", default-features = false, features = ["runtime-actix-rustls", "macros", "postgres", "chrono", "json"] }
@@ -50,6 +50,9 @@ email-postmark = [ ]
 email-sendgrid = [ ]
 static = ["actix-files"]
 template_watcher = ["notify"]
+cookie-session = ["actix-session/cookie-session"]
+redis-actor-session = ["actix-session/redis-actor-session"]
+redis-session = ["actix-session/redis-rs-session"]
 production = ["actix-web/secure-cookies", "djangohashers/with_pbkdf2"]
 
 [dev-dependencies]

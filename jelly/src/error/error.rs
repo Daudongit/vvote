@@ -2,12 +2,15 @@
 //! returning responses. This module handles converting several differing
 //! error formats into the one we use for responding.
 
-use crate::error::template::render;
+use std::{error, fmt, env::VarError, io::Error as IOError};
+
 use actix_web::{HttpResponse, ResponseError};
 use actix_session::{SessionGetError, SessionInsertError};
-use std::{error, fmt, env::VarError, io::Error as IOError};
+
+use crate::error::template::render;
 use crate::guards::auth::auth_config::MissingAuthSessionError;
 use crate::guards::csrf::{CsrfError, extractor::CsrfExtractorError};
+
 
 /// This enum represents the largest classes of errors we can expect to
 /// encounter in the lifespan of our application. Feel free to add to this
@@ -68,11 +71,8 @@ impl error::Error for Error {
     }
 }
 
-impl From<actix_web::error::Error> for Error {
-    fn from(e: actix_web::error::Error) -> Self {
-        Error::ActixWeb(e)
-    }
-}
+
+
 
 impl From<serde_json::error::Error> for Error {
     fn from(e: serde_json::error::Error) -> Self {
@@ -145,6 +145,7 @@ impl From<SessionInsertError> for Error {
         Error::SessionInsertError(e)
     }
 }
+
 
 impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {

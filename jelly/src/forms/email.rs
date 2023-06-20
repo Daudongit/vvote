@@ -1,9 +1,11 @@
 use std::fmt;
 use std::ops::Deref;
 use std::str::FromStr;
+
 use validator::validate_email;
-use super::{Validation, ParseStringError};
 use serde::{Deserialize, Deserializer, Serialize};
+
+use super::{Validation, ParseStringError};
 
 
 /// A field for validating that an email address is a valid address.

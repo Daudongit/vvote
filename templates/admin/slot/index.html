@@ -1,1 +1,117 @@
-<h3>Hello from slot </h3>
+{% extends "layouts/app.html" %}
+{% import "admin/macros/modal.html" as modal %}
+{% import "admin/macros/delete.html" as delete %}
+{% import "admin/slot/macros.html" as slot_partial %}
+{% import "admin/macros/pagination.html" as pagination_view %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="/static/assets/css/select2.min.css"> 
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                {% set slot_items = slots.data.0 %}
+                {% set slot_nominees = slots.data.1 %}
+                {% set start = (slots.current_page - 1) * slots.per_page + 1 %}
+                {% for slot in slot_items %}
+                    {% set current_slot_nominees = [] %}
+                    {% if slot_nominees[slot.id] %}
+                        {% set current_slot_nominees = slot_nominees[slot.id] %}
+                    {% endif %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading level">
+                                {{ start + loop.index0 }} <span class="position-title">{{ slot.position_name }}</span>
+                            <div class="level">
+                                {% set slot_nominees_item = [slot, current_slot_nominees] %}
+                                <a class="btn btn-info btn-sm" href="#modalComponet" 
+                                    data-toggle="modal" data-action="Edit" 
+                                    data-content="{{ slot_nominees_item | json_encode() }}">
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                </a>
+                                {{
+                                    delete::delete_btn(
+                                        id=slot.id,
+                                        route=url_for(
+                                            name='admin.slots.delete', elements=[slot.id | as_str]
+                                        )
+                                    ) | safe
+                                }}
+                                {% if loop.index0 == 0 %}
+                                    <a class="btn btn-success btn-sm ml04" href="#modalComponet" 
+                                        data-toggle="modal" data-action="Create">
+                                        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                    </a>
+                                {% endif  %}
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                {% for nominee in current_slot_nominees %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ nominee.first_name ~ ' ' ~ nominee.last_name }}</td>
+                                        <td>{{ nominee.email}}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3">
+                                            <div class="text-center">No candidate has been found for this slot.</div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading level">
+                            No election slot has been found.
+                            <div class="level">
+                                <a class="btn btn-success btn-sm" href="#modalComponet" 
+                                    data-toggle="modal" data-action="Create">
+                                    <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                <div class="text-center">
+                    {% 
+                        set pagination_collections = pagination(
+                            current_page=slots.current_page,
+                            per_page=slots.per_page,
+                            total=slots.total,
+                        ) 
+                    %}
+                    {{ pagination_view::render(pagination_items=pagination_collections) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% set post_url = url_for(name='admin.slots.store') %}
+{% endblock %}
+{% block modal %}
+    {{ 
+        modal::modal(
+            title="Create Slot", 
+            action=post_url,
+            body=slot_partial::slot_modal_template(positions=positions, nominees=nominees)
+        ) 
+    }}
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        const postUrl = "{{ post_url | safe }}"
+        const updateUrl = "{{ url_for(name='admin.slots.update', elements=['_']) | safe }}"
+    </script>
+    <script type="text/javascript" src="/static/assets/js/select2.min.js"></script>
+    <script type="text/javascript" src="/static/assets/js/select2_init.js"></script>
+    <script type="text/javascript" src="/static/assets/js/slot.modal.js"></script>
+{% endblock %}

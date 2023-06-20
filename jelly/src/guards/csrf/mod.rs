@@ -124,8 +124,6 @@ use std::fmt::Display;
 use std::pin::Pin;
 use std::rc::Rc;
 
-use extractor::CsrfToken;
-
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::{HttpMessage, HttpResponse, ResponseError};
 use actix_web::http::header::{self, HeaderValue};
@@ -133,6 +131,7 @@ use actix_web::http::{Method, StatusCode};
 use actix_web::error::InternalError;
 use extractor::CsrfCookieConfig;
 use cookie::{Cookie, SameSite};
+use extractor::CsrfToken;
 use rand::SeedableRng;
 // use tracing::{error, warn};
 use crate::error::template::render;

@@ -1,0 +1,23 @@
+{% macro slot_modal_template(positions, nominees) %}
+    <div class="form-group">
+        <label for="name" class="control-label"> Office:</label>
+        <select name="position_id" id="" class="form-control" required>
+            {% for position in positions %}
+                <option value="{{ position.id }}">
+                    {{ position.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="name" class="control-label"> Candidates:</label>
+        <select name="nominees" id="nominees" class="select2 form-control" 
+            multiple required>
+            {% for nominee in nominees %}
+                <option value="{{ nominee.id }}">
+                    {{ nominee.first_name ~ ' ' ~ nominee.last_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+{% endmacro slot_modal_template %}

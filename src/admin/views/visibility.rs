@@ -1,9 +1,10 @@
 use jelly::Result;
 use jelly::prelude::*;
-use crate::models::election::Election;
 use jelly::guards::csrf::extractor::Csrf;
-use crate::admin::forms::ElectionVisibilityForm;
 use jelly::actix_web::{web::{Form, Path}, HttpRequest};
+
+use crate::models::election::Election;
+use crate::admin::forms::ElectionVisibilityForm;
 
 type VisibilityForm = Csrf<Form<ElectionVisibilityForm>>;
 
@@ -20,7 +21,9 @@ pub async fn update(request: HttpRequest, path: Path<(i32,)>, form: VisibilityFo
             request.flash("success", msg.as_str())?;
         }
         Err(e)=>{
-            request.flash("error", "An error occure while updating election.")?; dbg!(e);
+            request.flash(
+                "error", "An error occure while updating election."
+            )?; dbg!(e);
         }
     }
     request.redirect("/admin/elections/")

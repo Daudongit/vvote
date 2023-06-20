@@ -1,16 +1,17 @@
 use std::sync::Arc;
-use rand::rngs::StdRng;
 use std::cell::RefCell;
-use crate::guards::AuthConfig;
+
+use rand::rngs::StdRng;
+use actix_web::http::Method;
 use actix_web::web::ServiceConfig;
-// use crate::guards::{Auth, AuthConfig};
+use actix_web::dev::{ResourceMap, Service};
+use actix_web::{dev, middleware, web, App, HttpServer};
+
 use crate::email::{Configurable, Email};
 use crate::guards::csrf::CsrfMiddleware;
 use crate::helpers::csrf::SetRoutes as _;
-use actix_web::dev::{ResourceMap, Service}; //, ServiceRequest, ServiceFactory};
 use crate::helpers::config::get_config_datas;
 use crate::helpers::utils::default_service_handler;
-use actix_web::{dev, middleware, web, App, HttpServer};
 
 thread_local! {
     pub static ROUTES_KEY: RefCell<Option<ResourceMap>> = RefCell::new(None);
@@ -21,14 +22,13 @@ type AppFn = Box<dyn Fn(&mut ServiceConfig) + Send + Sync + 'static>;
 /// the root project, and forces more coupling to app-specific modules.
 pub struct Server {
     apps: Vec<AppFn>,
-    auth_config: Vec<AuthConfig>,
-    csrf_routes: Vec<String>
+    csrf_routes: Vec<(Method, String)>
 }
 
 impl Server {
     /// Creates a new Server struct to configure.
     pub fn new() -> Self {
-        Self { apps: vec![], auth_config: vec![], csrf_routes: vec![] }
+        Self { apps: vec![], csrf_routes: vec![] }
     }
 
     /// initialise env, logger and email config
@@ -39,13 +39,8 @@ impl Server {
     }
 
     /// Registers a csrf_routes.
-    pub fn register_csrf_routes(mut self, csrf_routes: Vec<String>) -> Self {
+    pub fn register_csrf_routes(mut self, csrf_routes: Vec<(Method, String)>) -> Self {
         self.csrf_routes = csrf_routes; self
-    }
-
-    /// Registers a auth_config.
-    pub fn register_auth_config(mut self, auth_config: AuthConfig) -> Self {
-        self.auth_config.push(auth_config); self
     }
 
     /// Registers a service.
@@ -63,26 +58,19 @@ impl Server {
         ) = get_config_datas().await;
 
         let apps = Arc::new(self.apps);
-        // let auth_config = Arc::new(self.auth_config);
         let csrf_routes = Arc::new(self.csrf_routes);
-        // let set_routes_maps = 
-        //     move |req:ServiceRequest, srv: T| {
-        //     ROUTES_KEY.with(|routes| {
-        //         routes.borrow_mut().replace(req.resource_map().clone());
-        //     });
-        //     srv.call(req)
-        // };
+        let (store, key) = 
+            crate::helpers::session::create_session_store_key().await;
+
         let server = HttpServer::new(move || {
             let csrf = 
-                CsrfMiddleware::<StdRng>::new().enabled(true).set_csrf_routes(csrf_routes.to_vec());
+                CsrfMiddleware::<StdRng>::new().enabled(true)
+                .set_csrf_routes(csrf_routes.to_vec());
+            let session_ware = 
+                crate::helpers::session::create_session(store.clone(), key.clone());
             let mut app = App::new()
-                .app_data(pool.clone())
-                .app_data(templates.clone())
-                .wrap(crate::helpers::session::create_session())
-                .wrap(csrf)
-                .wrap(middleware::Logger::default())
-                // .wrap(Auth{auth_config: RefCell::new(Some(auth_config.to_vec()))})
-                // .wrap_fn(set_routes_maps)
+                .app_data(pool.clone()).app_data(templates.clone())
+                .wrap(session_ware).wrap(csrf).wrap(middleware::Logger::default())
                 .wrap_fn(move |req, srv| {
                     ROUTES_KEY.with(|routes| {
                         routes.borrow_mut().replace(req.resource_map().clone());
@@ -108,6 +96,3 @@ impl Server {
         Ok(server)
     }
 }
-
-
-// expected signature of `for<'r> fn(ServiceRequest, &'r <impl ServiceFactory<ServiceRequest, Config = (), Response = ServiceResponse<middleware::logger::StreamLog<BoxBody>>, Error = actix_web::Error, InitError = ()> as ServiceFactory<ServiceRequest>>::Service)

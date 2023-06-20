@@ -1,0 +1,100 @@
+{% extends "layouts/app.html" %}
+{% import "admin/macros/pagination.html" as pagination_view %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading level">
+                        <strong>{{ election.title }}</strong>
+                        <div class="level">
+                            <a class="btn btn-success btn-sm ml04" 
+                                href="{{ url_for(name='admin.elections.index') | safe }}">
+                                <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                {% set slot_collection = slots.data %}
+                {% for slot in slot_collection %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading level" >
+                            <span>{{slot.position_name}}</span>
+                            <div class="level">
+                                {% 
+                                    set action_url = url_for(
+                                        name='admin.export.index', elements=[
+                                            election.id | as_str, slot.position_id | as_str
+                                        ]
+                                    )
+                                %}
+                                <a class="btn btn-default btn-sm ml04" href="{{action_url | safe}}">
+                                    <img src="/static/assets/image/xls.png" width="21"/>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Candidate</th>
+                                        <th>Vote Count</th>
+                                        <th class="text-right">
+                                            {% 
+                                                set action_url = url_for(
+                                                    name='admin.export.show', elements=[
+                                                        election.id | as_str, slot.id | as_str
+                                                    ]
+                                                )
+                                            %}
+                                            <a class="btn btn-default btn-sm ml04" href="{{action_url | safe}}">
+                                                <i class="fa fa-file-text" aria-hidden="true"></i>
+                                            </a>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                {% set slot_nominees = [] %}
+                                {% if nominees[slot.id] %}
+                                    {% set slot_nominees = nominees[slot.id] %}
+                                {% endif %}
+                                {% for nominee in slot_nominees %}
+                                    <tr>
+                                        <td>{{loop.index}}</td>
+                                        <td>{{nominee.first_name ~ ' ' ~ nominee.last_name}}</td>
+                                        <td>{{nominee.results_count}}</td>
+                                        <td></td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3">
+                                            <div class="text-center">No nominee has been found for this slot.</div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div> 
+                {% else %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">No result has been found.</div>
+                    </div>
+                {% endfor %}
+                <div class="text-center">
+                    {% 
+                        set pagination_collections = pagination(
+                            current_page=slots.current_page,
+                            per_page=slots.per_page,
+                            total=slots.total,
+                        ) 
+                    %}
+                    {{ pagination_view::render(pagination_items=pagination_collections) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

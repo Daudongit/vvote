@@ -1,22 +1,16 @@
-pub mod election;
-pub mod nominee;
-pub mod position;
-pub mod result;
 pub mod slot;
-pub mod user;
 pub mod voter;
 pub mod admin;
+pub mod result;
+pub mod nominee;
+pub mod election;
+pub mod position;
 
+use jelly::serde::Serialize;
 use jelly::error::error::Error;
-use jelly::serde::{Deserialize, Serialize};
-use jelly::sqlx::{self, Row, postgres::PgPool};
+use jelly::sqlx::{self, Row as _, postgres::PgPool};
 
-#[derive(Deserialize)]
-pub struct RequestQParam{
-    pub page: Option<u16>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct PaginatedEntity<T> {
     current_page: u16,
     data: Vec<T>,
@@ -26,13 +20,9 @@ pub struct PaginatedEntity<T> {
 
 impl<T> From<(u16, u64, Vec<T>)> for PaginatedEntity<T>{
     fn from(entity: (u16, u64, Vec<T>)) -> Self {
+        let (current_page, total, data) = entity;
         let items_per_page = items_per_page();
-        Self {
-            current_page: entity.0,
-            data: entity.2,
-            per_page: items_per_page,
-            total: entity.1
-        }
+        Self {current_page, data, total, per_page: items_per_page}
     }    
 }
 

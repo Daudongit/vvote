@@ -55,8 +55,11 @@ impl FlashMessages for HttpRequest {
 
     fn get_flash_form(&self) -> Result<Option<Value>, Error> {
         let session = self.get_session();
-        let flash_form = session.get("flsh_form")?;
-        session.remove("flsh_form");
+        let mut flash_form = None;
+        match session.remove_as::<Value>("flsh_form").transpose(){
+            Ok(value) => flash_form = value,
+            Err(err) => {dbg!(err);}
+        }
         Ok(flash_form)
     }
 }

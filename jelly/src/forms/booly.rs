@@ -1,8 +1,9 @@
-use serde::{Deserialize, Deserializer, Serialize};
-use std::str::{FromStr, ParseBoolError};
-use super::Validation;
-use std::ops::Deref;
 use std::fmt;
+use std::ops::Deref;
+use std::str::{FromStr, ParseBoolError};
+
+use super::Validation;
+use serde::{Deserialize, Deserializer, Serialize};
 
 
 /// A simple BoolField.

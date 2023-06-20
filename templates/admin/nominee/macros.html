@@ -1,0 +1,30 @@
+{% macro nominee_modal_template() %}
+    <label for="recipient-name" class="control-label">First Name:</label>
+    <input type="text" class="form-control" id="first_name" name="first_name">
+    <label for="recipient-name" class="control-label">Last Name:</label>
+    <input type="text" class="form-control" id="last_name" name="last_name">
+    <label for="recipient-name" class="control-label">Email:</label>
+    <input type="text" class="form-control" id="email" name="email">
+    <label for="description" class="control-label"> Description:</label>
+    <input type="text" class="form-control" id="description" name="description"/>
+    <input type="hidden" id="removed_image" name="removed_image"/>
+    <div class="file-upload-previews">
+        <div class="MultiFile-label">
+            <a class="MultiFile-remove" href="#" id="remove_img">x</a> 
+            <span>
+                <span class="MultiFile-label" 
+                    title="File selected: image.jpg">
+                    <span class="MultiFile-title">Image</span>
+                    <img class="MultiFile-preview" style="max-height:100px;max-width:100px;">
+                </span>
+            </span>
+            <input type="hidden" name="previous_image"  id="previous_image"/>
+        </div>
+    </div>
+    <div class="file-upload">
+        <input type="file" name="image" class="file-upload-input with-preview"  
+            title="Click to add files" maxlength="1" accept="jpg|jpeg|png" 
+            data-maxsize="1024">
+        <span style="color:#000">CLICK OR DRAG IMAGE HERE</span>
+    </div>
+{% endmacro nominee_modal_template %}
