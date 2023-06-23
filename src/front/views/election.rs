@@ -79,10 +79,3 @@ pub async fn store(request: HttpRequest, form: DynamicForm) -> Result<HttpRespon
     }   
     request.redirect("/elections/")
 }
-
-// Helper
-// async fn verify_csrf_token(req: &HttpRequest, form_csrf: &str)->Result<bool>{
-//     let token = CsrfCookie::extract(&req).await
-//     .map_err(|err|Error::CsrfToken(CsrfExtractorError::Inner(err)))?;
-//     Ok(token.validate(dbg!(form_csrf)))
-// }

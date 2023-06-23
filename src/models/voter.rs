@@ -4,15 +4,6 @@ use jelly::error::error::Error;
 use jelly::sqlx::{self, postgres::PgPool};
 
 pub struct Voter;
-// pub struct Voter{
-//     id: i32,
-//     email: String,
-//     ip: String,
-//     member_id: String,
-//     phone: String,
-//     name: String,
-//     confirmation_token: String
-// }
 
 impl Voter {
     pub async fn find_by_ip(ip: &str, pool: &PgPool) -> Result<User, Error> {

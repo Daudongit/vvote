@@ -1,9 +1,9 @@
 //! Auth module.
-use jelly::actix_web::web::{get, post, scope, resource, ServiceConfig};
-
 pub mod views;
 pub mod forms;
 pub mod config;
+
+use jelly::actix_web::web::{get, post, scope, resource, ServiceConfig};
 
 pub fn configure_home(config: &mut ServiceConfig) {
     // Front

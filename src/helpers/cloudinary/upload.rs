@@ -64,6 +64,7 @@ impl Cloudinary{
         Ok(json)
     }
 
+    // https://github.com/Lurk/cloudinary_rs/blob/master/src/lib.rs
     fn build_form_data(&self, options: BTreeMap<String, String>) -> Form {
         let mut map = options.get_valid_options();
         let resource_type = map.remove("resource_type");

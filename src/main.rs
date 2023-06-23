@@ -1,7 +1,8 @@
 //! Your Service Description here, etc.
 
-use jelly::actix_web;
 use std::io;
+
+use jelly::actix_web;
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {

@@ -79,8 +79,7 @@ pub async fn destroy(request: HttpRequest, path: Path<(i32,)>, _: DeleteForm)
         }
         Err(e)=>{
             request.flash(
-                "error", 
-                "An error occure while deleting election."
+                "error", "An error occure while deleting election."
             )?; dbg!(e);
         }
     }

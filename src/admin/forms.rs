@@ -6,7 +6,7 @@ use jelly::forms::{TextField, EmailField, Validation, NumberField, DateTimeField
 
 #[derive(Deserialize)]
 pub struct RequestQParam{
-    pub page: Option<u16>,
+    pub page: Option<u16>
 }
 
 #[derive(Debug, Deserialize)] 

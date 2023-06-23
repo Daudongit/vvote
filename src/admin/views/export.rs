@@ -1,4 +1,3 @@
-// use excel::*;
 use jelly::Result;
 use jelly::prelude::*;
 use jelly::actix_web::web::Path;
@@ -33,36 +32,3 @@ pub async fn show(request: HttpRequest, path: Path<(i32, i32)>) -> Result<HttpRe
     .body(nominee_result_bytes?))
 }
 
-
-// pub async fn generate()->Result<HttpResponse> {
-//     // let mut wb = Workbook::create("/tmp/b.xlsx");
-//     let mut wb = Workbook::create_in_memory();
-//     let mut sheet = wb.create_sheet("SheetName");
-
-//     // set column width
-//     sheet.add_column(Column { width: 30.0 });
-//     sheet.add_column(Column { width: 30.0 });
-//     sheet.add_column(Column { width: 80.0 });
-//     sheet.add_column(Column { width: 60.0 });
-
-//     wb.write_sheet(&mut sheet, |sheet_writer| {
-//         let sw = sheet_writer;
-//         sw.append_row(row!["Name", "Title","Success","XML Remark"])?;
-//         sw.append_row(row!["Amy", (), true,"<xml><tag>\"Hello\" & 'World'</tag></xml>"])?;
-//         sw.append_blank_rows(2);
-//         sw.append_row(row!["Tony", blank!(2), "retired"])
-//     }).expect("write excel error!");
-
-//     let mut sheet = wb.create_sheet("Sheet2");
-//     wb.write_sheet(&mut sheet, |sheet_writer| {
-//         let sw = sheet_writer;
-//         sw.append_row(row!["Name", "Title","Success","Remark"])?;
-//         sw.append_row(row!["Amy", "Manager", true])
-//     }).expect("write excel error!");
-
-//     let excel_bytes = wb.close().expect("close excel error!");
-//     let excel_bytes = excel_bytes.unwrap_or_default();
-//     Ok(HttpResponse::Ok()
-//     .content_type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-//     .body(excel_bytes))
-// }

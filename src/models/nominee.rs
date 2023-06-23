@@ -135,5 +135,3 @@ impl Nominee{
         Ok(is_deleted)
     }
 }
-
-

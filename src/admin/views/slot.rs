@@ -71,7 +71,7 @@ pub async fn destroy(request: HttpRequest, path: Path<(i32,)>, _: DeleteForm)->R
         },
         Err(e)=>{
             request.flash("error", "An error occure while deleting slot.")?; 
-            dbg!("=============================================", e);
+            dbg!("====== Unable to delete slot ================", e);
         }
     }
     request.redirect("/admin/slots/")

@@ -1,6 +1,4 @@
 //! Your Service Description here, etc.
-extern crate simple_excel_writer as excel;
-use std::io;
 
 pub mod admin;
 pub mod auth;
@@ -10,8 +8,11 @@ pub mod error;
 pub mod helpers;
 pub mod extractors;
 
+use std::io;
+
 use jelly::Server;
 use helpers::csrf::csrf_routes;
+extern crate simple_excel_writer as excel;
 
 
 pub async fn main() -> io::Result<()> {

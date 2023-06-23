@@ -1,13 +1,13 @@
 //! Front module
+pub mod views;
+pub mod forms;
+
 use std::cell::RefCell;
 
 use jelly::guards::Auth;
 use jelly::actix_web::web::{get, post, resource, scope, ServiceConfig};
 
 use crate::auth::config::auth_config;
-
-pub mod views;
-pub mod forms;
 
 pub fn configure_results(config: &mut ServiceConfig) {
     let auth = Auth{auth_config: RefCell::new(Some(auth_config()))};

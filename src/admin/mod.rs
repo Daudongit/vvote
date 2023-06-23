@@ -1,4 +1,6 @@
 //! Admin module.
+pub mod views;
+pub mod forms;
 
 use std::cell::RefCell;
 
@@ -7,9 +9,6 @@ use jelly::actix_web::web::{get, post, resource, scope, ServiceConfig};
 
 use crate::auth::views::admin;
 use crate::auth::config::admin_auth_config;
-
-pub mod views;
-pub mod forms;
 
 pub fn configure(config: &mut ServiceConfig) {
     let auth = Auth{auth_config: RefCell::new(Some(admin_auth_config()))};
@@ -121,4 +120,3 @@ pub fn configure(config: &mut ServiceConfig) {
             )
     );
 }
-

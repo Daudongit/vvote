@@ -23,7 +23,8 @@ pub async fn update(request: HttpRequest, path: Path<(i32,)>, form: VisibilityFo
         Err(e)=>{
             request.flash(
                 "error", "An error occure while updating election."
-            )?; dbg!(e);
+            )?; 
+            dbg!("====== Unable to update election ========", e);
         }
     }
     request.redirect("/admin/elections/")

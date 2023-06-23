@@ -333,4 +333,3 @@ impl Results{
         Ok(excel_bytes)
     }
 }
-

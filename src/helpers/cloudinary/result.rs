@@ -1,3 +1,4 @@
+// https://github.com/Lurk/cloudinary_rs/blob/master/src/upload/result.rs
 use std::{fmt::Display, str::FromStr};
 
 use jelly::chrono::{DateTime, Utc};

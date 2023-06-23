@@ -12,7 +12,7 @@ type VoterIp<'a> = &'a str;
 
 #[derive(Deserialize)]
 pub struct RequestQParam{
-    pub page: Option<u16>,
+    pub page: Option<u16>
 }
 
 
@@ -170,4 +170,3 @@ impl<'a>  From<(ElectionForm, (VoterId, VoterIp<'a>))> for ElectionFormVec<'a> {
         Self(election_items)
     }
 }
-

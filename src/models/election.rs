@@ -17,8 +17,9 @@ type ResultElection = Result<HashMap<i32, Vec<SlotId>>, Error>;
 type ResultDate = Result<(NaiveDateTime, NaiveDateTime), Error>;
 type ResultElectionIds = Result<(Vec<i32>,Vec<Election>), Error>;
 type ResultSlotNominees = Result<HashMap<i32, Vec<Nominee>>, Error>;
-type ResultElectionPaginated = Result<PaginatedEntity<Election>, Error>;
 type ResultSlotPosition = Result<(Vec<i32>, Vec<SlotPosition>), Error>;
+type ResultElectionPaginated = Result<PaginatedEntity<Election>, Error>;
+type ResultElectionDateStatus = Result<(i32, ElectionStatus, (NaiveDateTime, NaiveDateTime, String)), Error>;
 
 
 #[derive(Debug, Serialize)]
@@ -109,8 +110,7 @@ impl ElectionRow{
         (start_date, end_date)
     }
 
-    fn format_date_with_status(row: &PgRow)
-        ->Result<(i32, ElectionStatus, (NaiveDateTime, NaiveDateTime, String)), Error>{
+    fn format_date_with_status(row: &PgRow)->ResultElectionDateStatus{
         let id = row.try_get("id")?;
         let status = row.try_get("status")?;
         let end:NaiveDateTime = row.try_get("end")?;
@@ -201,14 +201,12 @@ impl Election{
             select count(*) from results where elections.id = results.election_id
         ) as results_count from elections order by created_at, id asc 
         limit {} offset {}", items_per_page, offset);
-        // let sql = Box::leak(sql.into_boxed_str()); // String to &'static str to live for program life
         let (election_ids, elections) = 
             Self::get_processed_record(sql, pool).await?;
         Ok((election_ids, elections))
     }
 
     pub async fn get_election_slots(election_ids: Vec<i32>, pool: &PgPool)->ResultElection{
-        // let election_ids = Box::leak(election_ids.into_boxed_slice()); // for longer live
         let sql: String = "
             select slots.id, election_slot.election_id as pivot_election_id from slots 
             inner join election_slot on slots.id = election_slot.slot_id
