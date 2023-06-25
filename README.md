@@ -34,7 +34,7 @@ $ cargo run --features cloudinary
 ```
 
 # Usage
-use the **JELLY_DOMAIN** url set to vote (http://your_domain.com)
+use the **JELLY_DOMAIN** url set to vote (http://your_domain.com)\
 use **JELLY_DOMAIN/admin** to login to admin dashbord (http://your_domain.com/admin)\
 login email is `admin@gmail.com`\
 login passpord is `secret`
