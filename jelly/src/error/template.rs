@@ -163,7 +163,6 @@ pub(crate) fn render<E: std::fmt::Debug>(_e: E) -> String {
             </div>	
             </body><!-- This templates was made by Colorlib (https://colorlib.com) -->
         </html>
-    "#,
-        e
+        "#
     )
 }
