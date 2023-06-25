@@ -1,5 +1,5 @@
 # vvote
-vvote is an evoting system build with actix-web(modify (jelly)[https://github.com/secretkeysio/jelly-actix-web-starter] template) and tera template
+vvote is an evoting system build with actix-web(modify [jelly](https://github.com/secretkeysio/jelly-actix-web-starter) template) and tera template
 The voting check/mechanisim is base on voter ip-address and web-browser(fingerprintjs)
 
 # Applications features
