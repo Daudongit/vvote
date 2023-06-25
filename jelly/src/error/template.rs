@@ -41,7 +41,7 @@ pub(crate) fn render<E: std::fmt::Debug>(e: E) -> String {
 
 /// A generic method for rendering an error to present to the browser.
 #[cfg(feature = "production")]
-pub(crate) fn render<E: std::fmt::Debug>(e: E) -> String {
+pub(crate) fn render<E: std::fmt::Debug>(_e: E) -> String {
     format!(
         r#"<!DOCTYPE html>
         <html lang="en">
