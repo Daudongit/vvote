@@ -35,7 +35,7 @@
                                 <fieldset  title="{{asci_str_limit(value=position.position_name, max_index=3)}}"
                                     class="step" id="default-step-{{loop.index}}">
                                     <legend> </legend>
-                                    <div class="panel panel-warning">
+                                    <div class="panel panel-success">
                                         <div class="panel-heading">
                                             <h3 class="panel-title">
                                                 Vote your choice for <b>{{ position.position_name }}</b> position
@@ -56,7 +56,10 @@
                                                     <div class="fb-user-thumb">
                                                         {% set img_url = '/static/assets/image/no_image.jpg' %}
                                                         {%if nominee.image %}
-                                                            {% set img_url = '/static/uploads/' ~ nominee.image %}
+                                                            {% set img_url = nominee.image %}
+                                                            {% if img_url is not starting_with("http") %}
+                                                                {% set img_url = '/static/uploads/' ~ img_url %} 
+                                                            {% endif %}
                                                         {% endif %}
                                                         <img src="{{img_url}}"  alt="{{nominee.first_name}}">
                                                     </div>
