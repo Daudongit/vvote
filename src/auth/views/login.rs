@@ -27,7 +27,8 @@ pub async fn login(request: HttpRequest, _: ValidCsrfForm) -> Result<HttpRespons
     }
 
     let ip_error = Error::Generic("Valid ip address is needed to vote".into());
-    let voter_ip = request.peer_addr().ok_or(ip_error)?.ip().to_string();
+    let voter_ip = 
+        request.connection_info().realip_remote_addr().ok_or(ip_error)?.to_string();
     let db = request.db_pool()?;
     let mut voter = 
         Voter::find_by_ip(&voter_ip, db).await;
