@@ -9,7 +9,8 @@ use crate::models::result::Results;
 async fn can_vote_with_signature(request: &HttpRequest, signature: (u64, String))
     ->Result<(bool, String)>{
     let ip_error = Error::Generic("Valid ip address is needed to vote".into());
-    let voter_ip = request.peer_addr().ok_or(ip_error)?.ip().to_string();
+    let voter_ip = 
+        request.connection_info().realip_remote_addr().ok_or(ip_error)?.to_string();
     let db = request.db_pool()?;
     let signature = (voter_ip.as_str(), signature);
     let count = Results::check_signature_count(signature, db).await?;
