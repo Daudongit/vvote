@@ -42,3 +42,6 @@ login passpord is `secret`
 # Online Demo
 [Voting url](https://vvote.onrender.com)\
 [Admin url](https://vvote.onrender.com/admin)
+
+# License
+vvote is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
